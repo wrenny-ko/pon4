@@ -20,4 +20,4 @@
 
   $signupCtr->signupUser();
 
-  header("location: index.php?error=none");
+  header("location: user.php");

@@ -16,98 +16,112 @@ class SignupController extends Signup {
     $this->password = $password;
   }
 
-  public function signupUser() {
-    if ($this->emptyInput() === true) {
-      $error = "empty signup fields";
-      header("location: signup.php?error=" . htmlspecialchars($error));
-      exit();
-    }
-
-    if ($this->validUsername($this->username) === false) {
-      $error = "invalid username. Usernames must be alphanumeric and under 20 characters.";
-      header("location: signup.php?error=" . htmlspecialchars($error));
-      exit();
-    }
-
-    if ($this->validEmail($this->email) === false) {
-      $error = "invalid email.";
-      header("location: signup.php?error=" . htmlspecialchars($error));
-      exit();
-    }
-
-    if ($this->validPassword($this->password) === false) {
-      $error = "invalid password. Passwords must be alphanumeric and between 5-40 characters."
-      header("location: signup.php?error=" .htmlspecialchars($error));
-      exit();
-    }
-
-    if ($this->checkUserExists($this->username, $this->email) === true) {
-      $error = "username already taken."
-      header("location: signup.php?error=" . htmlspecialchars($error));
-      exit();
-    }
-
-    $this->createUser($this->username, $this->email, $this->password);
+  private function signupError($msg) {
+    header("location: signup.php?error=" . htmlspecialchars($msg));
+    exit();
   }
 
-  private function emptyInput() {
-    $empty;
-    if (empty($this->username) || empty($this->email) || empty($this->password)) {
-      $empty = true;
-    } else {
-      $empty = false;
+  public function signupUser() {
+    $error = $this->checkEmptyInput();
+    if (!empty($error)) {
+      $error = "empty input. " . $error;
+      $this->signupError($error);
     }
-    return $empty;
+
+    $error = $this->validateUsername($this->username);
+    if (!empty($error)) {
+      $error = "invalid username. " . $error;
+      $this->signupError($error);
+    }
+
+    $error = $this->validateEmail($this->email);
+    if (!empty($error)) {
+      $error = "invalid email. " . $error;
+      $this->signupError($error);
+    }
+
+    $error = $this->validatePassword($this->password);
+    if (!empty($error)) {
+      $error = "invalid password. " . $error;
+      $this->signupError($error);
+    }
+
+    $error = $this->checkUserExists($this->username, $this->email);
+    if (!empty($error)) {
+      $error = "Username check failed. " . $error;
+      $this->signupError($error);
+    }
+
+    $error = $this->createUser($this->username, $this->email, $this->password);
+    if (!empty($error)) {
+      $error = "could not create user. " . $error;
+      $this->signupError($error);
+    }
+
+    session_start();
+    $_SESSION['username'] = $this->username;
+  }
+
+  private function checkEmptyInput() {
+    if (empty($this->username)) {
+      return "Username required";
+    } else if (empty($this->email)) {
+      return "Email required.";
+    } else if (empty($this->password)) {
+      return "Password required.";
+    }
+    return "";
   }
 
   // checks if format of user-input username is valid
-  private function validUsername($username) {
-    $valid = true;
-
+  private function validateUsername($username) {
     // enforce at least one char, alphanumeric
     if (preg_match("/^[a-zA-Z0-9]+$/", $username) !== 1) {
-      $valid = false;
+      return "Requires only alphanumeric.";
     }
 
     if (strlen($username) > $this->usernameMaxLength) {
-      $valid = false;
+      return "Too long; must be under " . 
+      $this->usernameMaxLength . " characters.";
     }
 
-    return $valid;
+    return "";
   }
 
   // checks if format of user-input email is valid
-  private function validEmail($email) {
-    $valid = true;
+  private function validateEmail($email) {
     if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-      $valid = false;
+      return "Improper format.";
     }
 
     if (strlen($email) > $this->emailMaxLength) {
-      $valid = false;
+      return "Too long; must be under " . 
+      $this->usernameMaxLength . " characters.";
     }
 
-    return $valid;
+    return "";
   }
 
   // checks if format of user-input password is valid
   // currently allows alphanumeric passwords only
-  private function validPassword($password) {
-    $valid = true;
-
+  private function validatePassword($password) {
     // enforce at least one char, alphanumeric
     if (preg_match("/^[a-zA-Z0-9]+$/", $password) !== 1) {
-      $valid = false;
+      return "Requires only alphanumeric.";
     }
 
     if (strlen($password) < $this->passwordMinLength) {
-      $valid = false;
+      return "Too short; must be between " . 
+      $this->passwordMinLength . "-" .
+      $this->passwordMaxLength . " characters.";
     }
 
     if (strlen($password) > $this->passwordMaxLength) {
-      $valid = false;
+      return "Too long; must be between " . 
+      $this->passwordMinLength . "-" .
+      $this->passwordMaxLength . " characters.";
     }
 
-    return $valid;
+    return "";
   }
 }

@@ -13,95 +13,90 @@ class LoginController extends Login {
     $this->password = $password;
   }
 
-  public function loginUser() {
-    if ($this->emptyInput() === true) {
-      $error = "empty login fields";
-      header("location: login.php?error=" . htmlspecialchars($error));
-      exit();
-    }
-
-    if ($this->validUsername($this->username) === false) {
-      $error = "invalid username. Usernames are alphanumeric and under 20 characters.";
-      header("location: login.php?error=" . htmlspecialchars($error));
-      exit();
-    }
-
-    if ($this->validPassword($this->password) === false) {
-      $error = "invalid password. Passwords are alphanumeric and between 5-40 characters.";
-      header("location: login.php?error=" . htmlspecialchars($error));
-      exit();
-    }
-
-    if ($this->checkUserExists($this->username) === false) {
-      $error = "username not found";
-      header("location: signup.php?error=" . htmlspecialchars($error));
-      exit();
-    }
-
-    if ($this->comparePassword($this->username, $this->password) === true) {
-      session_start();
-      $_SESSION['username'] = $this->username;
-    }
+  private function loginError($msg) {
+    header("location: login.php?error=" . htmlspecialchars($msg));
+    exit();
   }
 
-  private function emptyInput() {
-    $empty;
-    if (empty($this->username) || empty($this->password)) {
-      $empty = true;
-    } else {
-      $empty = false;
+  public function loginUser() {
+    $error = $this->checkEmptyInput();
+    if (!empty($error)) {
+      $error = "empty login fields" . $error;
+      $this->loginError($error);
     }
-    return $empty;
+
+    $error = $this->validateUsername($this->username);
+    if (!empty($error)) {
+      $error = "invalid username. " . $error;
+      $this->loginError($error);
+    }
+
+    $error = $this->validatePassword($this->password);
+    if (!empty($error)) {
+      $error = "invalid password. " . $error;
+      $this->loginError($error);
+    }
+
+    $error = $this->checkUserExists($this->username);
+    if (!empty($error)) {
+      $error = "Username check failed. " . $error;
+      $this->loginError($error);
+    }
+
+    $error = $this->comparePassword($this->username, $this->password);
+    if (!empty($error)) {
+      $error = "Password check failed. " . $error;
+      $this->loginError($error);
+    }
+
+    session_start();
+    $_SESSION['username'] = $this->username;
+  }
+
+  private function checkEmptyInput() {
+    if (empty($this->username)) {
+      return "Username required";
+    } else if (empty($this->password)) {
+      return "Password required.";
+    }
+    return "";
   }
 
   // checks if format of user-input username is valid
-  private function validUsername($username) {
-    $valid = true;
-
+  private function validateUsername($username) {
     // enforce at least one char, alphanumeric
     if (preg_match("/^[a-zA-Z0-9]+$/", $username) !== 1) {
-      $valid = false;
+      return "Requires only alphanumeric.";
     }
 
     if (strlen($username) > $this->usernameMaxLength) {
-      $valid = false;
+      return "Too long; must be under " . 
+      $this->usernameMaxLength . " characters.";
     }
 
-    return $valid;
-  }
-
-  // checks if format of user-input email is valid
-  private function validEmail($email) {
-    $valid = true;
-    if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-      $valid = false;
-    }
-
-    if (strlen($email) > $this->emailMaxLength) {
-      $valid = false;
-    }
-
-    return $valid;
+    return "";
   }
 
   // checks if format of user-input password is valid
   // currently allows alphanumeric passwords only
-  private function validPassword($password) {
-    $valid = true;
-
+  private function validatePassword($password) {
     // enforce at least one char, alphanumeric
     if (preg_match("/^[a-zA-Z0-9]+$/", $password) !== 1) {
-      $valid = false;
+      return "Requires only alphanumeric.";
     }
 
     if (strlen($password) < $this->passwordMinLength) {
-      $valid = false;
+      return "Too short; must be between " . 
+      $this->passwordMinLength . "-" .
+      $this->passwordMaxLength . " characters.";
     }
 
     if (strlen($password) > $this->passwordMaxLength) {
-      $valid = false;
+      return "Too long; must be between " . 
+      $this->passwordMinLength . "-" .
+      $this->passwordMaxLength . " characters.";
     }
 
-    return $valid;
+    return "";
   }
 }

@@ -7,19 +7,15 @@ class Login extends DatabaseHandler {
     $statement = $pdo->prepare($sql);
 
     if ( !$statement->execute(array($username)) ) {
-      $statement = null;
-      $error = "failed to check user";
-      header("location: ../login.php?error=" . htmlspecialchars($error)); //TODO change
-      exit();
+      return "Database check failed.";
     }
 
-    $exists = false;
-    if ($statement->rowCount() > 0) {
-      $exists = true;
+    if ($statement->rowCount() === 0) {
+      return "Username does not exist.";
     }
 
     $statement = null;
-    return $exists;
+    return "";
   }
 
   protected function comparePassword($username, $password) {
@@ -28,10 +24,7 @@ class Login extends DatabaseHandler {
     $statement = $pdo->prepare($sql);
 
     if ( !$statement->execute(array($username)) ) {
-      $statement = null;
-      $error = "login failed";
-      header("location: ../login.php?error=" . htmlspecialchars($error));
-      exit();
+      return "Database error.";
     }
 
     $row = $statement->fetch();
@@ -42,13 +35,12 @@ class Login extends DatabaseHandler {
 
     $hashed = $this->hash($password, $salt);
 
-    $matches = false;
-    if ($hashed === $storedPassword) {
-      $matches = true;
+    if ($hashed !== $storedPassword) {
+      return "Incorrect password.";
     }
 
     $statement = null;
-    return $matches;
+    return "";
   }
 
   private function hash($password, $salt_hex) {

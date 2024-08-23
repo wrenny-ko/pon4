@@ -24,7 +24,7 @@
       <?php
         if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) {
           $username = $_SESSION['username'];
-          echo "<a href=\"/user/$username\" class=\"account\">";
+          echo "<a href=\"/user.php\" class=\"account\">";
           echo "$username";
           echo "</a>";
         } else {

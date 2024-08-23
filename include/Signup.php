@@ -8,13 +8,13 @@ class Signup extends DatabaseHandler {
 
     $hashed = $this->saltAndHash($password);
 
+    $error = "";
     if(!$statement->execute(array($username, $email, $hashed))) {
-      $statement = null;
-      $error = "failed to create user";
-      header("location: ../index.php?error=" . htmlspecialchars($error));
-      exit();
+      $error = "Database error.";
     }
+
     $statement = null;
+    return $error;
   }
 
   protected function checkUserExists($username, $email) {
@@ -22,20 +22,17 @@ class Signup extends DatabaseHandler {
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
 
+    $error = "";
     if ( !$statement->execute(array($username, $email)) ) {
-      $statement = null;
-      $error = "failed to check for existing user";
-      header("location: ../index.php?error=" . htmlspecialchars($error));
-      exit();
+      $error = "Database failure.";
     }
 
-    $exists = false;
     if ($statement->rowCount() > 0) {
-      $exists = true;
+      $error = "Already taken.";
     }
 
     $statement = null;
-    return $exists;
+    return $error;
   }
 
   // generate 64 bytes hex string of hashed password with appended salt
