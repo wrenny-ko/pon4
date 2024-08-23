@@ -1,1 +1,6 @@
-Single-player pony card game website featuring a community score leaderboard
+The Pon4 Project
+
+To run, use:
+```
+docker compose up --build
+```
