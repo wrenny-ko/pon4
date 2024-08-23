@@ -16,7 +16,7 @@
       </a>
     </div>
     <div class="newPost">
-      <a href="/new">
+      <a href="/new.php">
         <img src="/newpost.png" class="icon nav-entry" alt="newpost"/>
       </a>
     </div>

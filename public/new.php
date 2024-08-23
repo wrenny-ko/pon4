@@ -6,6 +6,7 @@
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="main.css" type="text/css">
+  <link rel="stylesheet" href="new.css" type="text/css">
 </head>
 <body>
   <div class="navbar">
@@ -22,6 +23,7 @@
     <div class="account nav-entry">
       <?php
         if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) {
+          echo "<img class=\"avatar icon\"/>";
           $username = $_SESSION['username'];
           echo "<a href=\"/user/$username\" class=\"account\">";
           echo "$username";
@@ -37,8 +39,26 @@
     </div>
   </div>
   <div class="bg">
-    <form class="logoutForm" action="postLogout.php" method="post">
-      <input class="logoutButton" type="submit" value="Logout"/>
-    </form>
+    <div class="newLayout">
+      <div class="padContainer">
+        <canvas class="pad"></canvas>
+      </div>
+      <div class="buttonContainer">
+        <input type="button" class="button clearCanvasButton" value="Reset"/>
+        <input type="button" class="button submitButton" value="Submit"/>
+        <div class="spinner hidden"/>
+      </div>
+      <div class="error">
+        placeholder
+      </div>
+    </div>
   </div>
+  <div class="titleModal center ">
+    <img class="thumb">
+    <div class="titleLabel">What do you want to call it?</div>
+    <input type="text" class="textInput inputTitle"/>
+    <input type="button" class="button titleButton" value="Post it!"/>
+    <input type="button" class="closeTitleModal button" value="Go back!"/>
+  </div>
+  <script src="new.js"></script>
 </body>

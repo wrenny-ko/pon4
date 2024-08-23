@@ -21,7 +21,7 @@ class LoginController extends Login {
   public function loginUser() {
     $error = $this->checkEmptyInput();
     if (!empty($error)) {
-      $error = "empty login fields" . $error;
+      $error = "empty login fields. " . $error;
       $this->loginError($error);
     }
 

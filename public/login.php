@@ -22,13 +22,14 @@
       </a>
     </div>
     <div class="newPost">
-      <a href="/new">
+      <a href="/new.php">
         <img src="/newpost.png" class="icon nav-entry" alt="newpost"/>
       </a>
     </div>
     <div class="account nav-entry">
       <?php
         if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) {
+          echo "<img class=\"avatar\"/>";
           $username = $_SESSION['username'];
           echo "<a href=\"/user?username=$username\" class=\"account\">";
           echo "$username";
@@ -71,4 +72,5 @@
       </form>
     </div>
   </div>
+  <script src="login.js"></script>
 </body>
