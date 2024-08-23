@@ -1,0 +1,28 @@
+services:
+  web:
+    image: php:apache
+    ports:
+      - "80:80"
+    depends_on:
+      - db
+    build: .
+    volumes:
+      - ./public:/var/www/html
+      - ./include:/var/www/include
+  db:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pon4_db
+    volumes:
+      - ./db:/var/lib/mysql
+      - ./schema:/docker-entrypoint-initdb.d
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    environment:
+      PMA_HOST:
+        db

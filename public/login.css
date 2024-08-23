@@ -1,0 +1,65 @@
+.login {
+  display: flex;
+  height: calc(100vh - 50px);
+  width: 100%;
+  background-color: #faf;
+  align-items: center;
+  justify-content: center;
+}
+
+.loginForm {
+  width: 60%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.inputField {
+  width: 90%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.fieldLabel {
+  width: 100%;
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: #000000;
+}
+
+.textInput {
+  width: 100%;
+  margin: 8px 0;
+  font-size: 1.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.submitButton {
+  width: 50%;
+  background-color: #9141ac;
+  height: 40%;
+  margin: 8px 0;
+  font-size: 1.5rem;
+  border: 1px solid #813d9c;
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: all 0.4s;
+}
+
+.submitButton:hover:not([disabled]) {
+  background-color: rgba(0,0,0,0.4);
+  cursor: pointer;
+}
+
+.errorBox {
+  height: 100%;
+  padding-top: 40px;
+  font-size: 1.5rem;
+  color: #f00;
+}

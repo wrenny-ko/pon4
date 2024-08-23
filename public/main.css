@@ -1,0 +1,50 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+.navbar {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  width: 100%;
+  height: 50px;
+  background-color: #613583;
+  justify-content: space-between;
+}
+
+.nav-entry {
+  transition: all 0.4s;
+}
+
+.nav-entry:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.newpost {
+  margin-left: 2rem;
+}
+
+.icon {
+  padding: 5px;
+  width: 40px;
+  height: 40px;
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  font-size: 1.7rem;
+  margin-right: 5px;
+  font-weight: bold;
+  color: #33d17a;
+  text-decoration: none;
+}
+
+.bg {
+  display: flex;
+  width: 100%;
+  height: calc(100vh - 50px);
+  background-color: #faf;
+}
