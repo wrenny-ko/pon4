@@ -100,10 +100,19 @@ class ScribbleController extends Scribble {
         $this->error("Error reading scribble. " . $error);
       }
       echo json_encode( array("scribble" => $this->getScribble()) );
+    } else if(isset($_GET["search"])) {
+      //TODO parse "user:<username>" for separate search
+      //TODO not searching special chars correctly
+      //$decoded = html_entity_decode($_GET["search"], ENT_QUOTES | ENT_XML1, 'UTF-8');
+      $error = $this->getScribbleSearchTitle($_GET["search"]);
+      if (!empty($error)) {
+        $this->error("Error searching scribbles. " . $error);
+      }
+      echo json_encode( array("scribbles" => $this->scribbleList) );
     } else {
       $error = $this->getScribbleList();
       if (!empty($error)) {
-        $this->error("Error reading scribble. " . $error);
+        $this->error("Error searching scribbles. " . $error);
       }
       echo json_encode( array("scribbles" => $this->scribbleList) );
     }

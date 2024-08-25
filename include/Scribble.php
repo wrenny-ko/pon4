@@ -32,6 +32,8 @@ class Scribble extends DatabaseHandler {
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
 
+    //$title = html_entity_decode($title, ENT_QUOTES | ENT_XML1, 'UTF-8');
+
     try {
       if ( !$statement->execute(array($uid, $title, $data_url)) ) {
         return "Database insert failed.";
@@ -207,6 +209,48 @@ class Scribble extends DatabaseHandler {
     $statement = $pdo->prepare($sql);
 
     if ( !$statement->execute() ) {
+      return "Database lookup failed.";
+    }
+
+    if ($statement->rowCount() === 0) {
+      return "No scribbles exist.";
+    }
+
+    $this->scribbleList = $statement->fetchAll();
+
+    return "";
+  }
+
+  // returns an array of scribble ids and titles
+  protected function getScribbleListByUsername($username) {
+    $sql = "SELECT users.username, scribbles.id, scribbles.title, scribbles.data_url 
+     FROM scribbles INNER JOIN users ON users.id = scribbles.user WHERE user.username = ?";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($username)) ) {
+      return "Database lookup failed.";
+    }
+
+    if ($statement->rowCount() === 0) {
+      return "No scribbles exist.";
+    }
+
+    $this->scribbleList = $statement->fetchAll();
+
+    return "";
+  }
+
+    // returns an array of scribble ids and titles
+  protected function getScribbleSearchTitle($search) {
+    $sql = "SELECT users.username, scribbles.id, scribbles.title, scribbles.data_url 
+     FROM scribbles INNER JOIN users ON users.id = scribbles.user WHERE scribbles.title LIKE ?";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    $search = '%' . htmlspecialchars_decode($search) . '%';
+    //$search = '%' . $search . '%';
+    if ( !$statement->execute(array($search)) ) {
       return "Database lookup failed.";
     }
 

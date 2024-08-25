@@ -7,7 +7,7 @@ async function populateScribble() {
   }
   const res = await response.json();
   const scribble = res['scribble']
-console.log(scribble)
+
   let si = document.getElementsByClassName('scribble-image')[0];
   si.src = scribble.data_url;
 
@@ -16,7 +16,11 @@ console.log(scribble)
   sa.href = "users.php?name=" + scribble.username;
 
   let st = document.getElementsByClassName('scribble-title')[0];
-  st.innerHTML = scribble.title;
+  let title = scribble.title;
+    if (title.length > 15) {
+      title = title.substr(0, 14) + "\n" + title.substr(15);
+    }
+  st.innerText = title;
 }
 
 async function setAvatar(username) {

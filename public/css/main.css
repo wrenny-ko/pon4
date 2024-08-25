@@ -113,4 +113,5 @@
   width: 100%;
   height: calc(100vh - 50px);
   background-color: #faf;
+  overflow: auto;
 }

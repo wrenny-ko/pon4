@@ -13,7 +13,7 @@
     </div>
     <div class="searchbar">
       <form class="search">
-        <input type="image" src="search.png" name="searchButton" class="icon nav-entry search-icon" onclick="alert('clicked!!');"/>
+        <input type="image" src="search.png" name="searchButton" class="icon nav-entry search-icon" onclick="return search()"/>
         <input type="text" name="searchText" class="search-text" placeholder="search titles, or try by:<username>"/>
       </form>
     </div>
@@ -37,4 +37,14 @@
       }
     ?>
   </div>
+  <script>
+    function search() {
+      event.preventDefault();
+      let st = document.getElementsByClassName('search-text')[0];
+      query = st.value;
+      url = 'index.php?search=' + encodeURIComponent(query);
+      window.location.href = url;
+      false;
+    }
+  </script>
 </div>
