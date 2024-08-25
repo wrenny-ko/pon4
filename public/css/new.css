@@ -1,4 +1,4 @@
-.newLayout {
+.new-layout {
   display: flex;
   width: 100%;
   height: 100%;
@@ -8,7 +8,7 @@
 }
 
 
-.padContainer {
+.pad-container {
   width: 100%;
   display: flex;
   align-items: center;
@@ -22,7 +22,7 @@
   color: #000;
 }
 
-.buttonContainer {
+.button-container {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,7 +31,7 @@
   margin-top: 20px;
 }
 
-.textInput {
+.text-input {
   width: 100%;
   margin: 8px 0;
   font-size: 1.5rem;
@@ -82,7 +82,7 @@
   100% { transform: rotate(360deg); }
 }
 
-.errorBox {
+.error-box {
   align-self: end;
   display: flex;
   height: 100%;
@@ -97,7 +97,7 @@
   color: #f00;
 }
 
-.titleModal {
+.title-modal {
   width: 50%;
   height: 50%;
   z-index: -1;
@@ -109,17 +109,17 @@
   transition: all .04s;
 }
 
-.titleLabel {
+.title-label {
   margin: 10px;
 }
 
-.inputTitle {
+.input-title {
   margin: 10px;
   width: 80%;
   font-size: 1.5rem;
 }
 
-.titleButton {
+.title-button {
   background-color: #dc8add;
 }
 
@@ -129,6 +129,6 @@
   background-color: #fff;
 }
 
-.closeTitleModal {
+.close-title-modal {
   background-color: #dc8add;
 }

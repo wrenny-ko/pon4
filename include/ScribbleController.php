@@ -59,7 +59,11 @@ class ScribbleController extends Scribble {
       $this->error("Improperly formatted json fields.");
     }
 
-    $error = $this->createScribble($username, $scribble->data_url);
+    if (strlen($scribble->title) > 30) {
+      $this->error("Title must be under 30 characters.");
+    }
+
+    $error = $this->createScribble($username, $scribble->title, $scribble->data_url);
     if (!empty($error)) {
       $this->error("Creation failed. " . $error);
     }
@@ -83,5 +87,25 @@ class ScribbleController extends Scribble {
     }
 
     echo json_encode(array("success" => $this->data_url));
+  }
+
+  public function handleScribbleGet() {
+    if ($_SERVER["REQUEST_METHOD"] !== 'GET') {
+      $this->error("Only accept GET on this route.");
+    }
+
+    if (isset($_GET["id"])) {
+      $error = $this->readScribble($_GET["id"]);
+      if (!empty($error)) {
+        $this->error("Error reading scribble. " . $error);
+      }
+      echo json_encode( array("scribble" => $this->getScribble()) );
+    } else {
+      $error = $this->getScribbleList();
+      if (!empty($error)) {
+        $this->error("Error reading scribble. " . $error);
+      }
+      echo json_encode( array("scribbles" => $this->scribbleList) );
+    }
   }
 }

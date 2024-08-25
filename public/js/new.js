@@ -27,7 +27,7 @@ class LineData {
 }
 
 function scribble() {
-  document.querySelector(".submitButton").setAttribute("disabled", "");
+  document.querySelector(".submit-button").setAttribute("disabled", "");
 
   let c = document.getElementsByClassName("pad")[0];
   let ctx = c.getContext("2d");
@@ -76,7 +76,7 @@ function scribble() {
     pt = new Point(position.x, position.y);
     ld.recordPoint(pt);
 
-    document.querySelector(".submitButton").removeAttribute("disabled");
+    document.querySelector(".submit-button").removeAttribute("disabled");
   }
 
   function mouseEnter(e) {
@@ -103,6 +103,7 @@ function scribble() {
 
   function clearCanvas(e) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    document.querySelector(".submit-button").setAttribute("disabled", "");
   }
 
   document.addEventListener('resize', resize);
@@ -111,19 +112,21 @@ function scribble() {
   document.addEventListener('mousemove', mouseMove);
   document.addEventListener('mouseenter', mouseEnter);
 
-  let reset = document.getElementsByClassName("clearCanvasButton")[0];
+  let reset = document.getElementsByClassName("clear-canvas-button")[0];
   reset.addEventListener('click', clearCanvas);
 
+  // show the spinner and disable the main buttons
   function disable() {
     document.querySelector(".spinner").classList.remove('hidden');
-    document.querySelector(".submitButton").setAttribute("disabled", "");
-    document.querySelector(".clearCanvasButton").setAttribute("disabled", "");
+    document.querySelector(".submit-button").setAttribute("disabled", "");
+    document.querySelector(".clear-canvas-button").setAttribute("disabled", "");
   }
 
+  // hide the spinner and allow the buttons to be pressed again
   function enable() {
     document.querySelector(".spinner").classList.add('hidden');
-    document.querySelector(".submitButton").removeAttribute("disabled");
-    document.querySelector(".clearCanvasButton").removeAttribute("disabled");
+    document.querySelector(".submit-button").removeAttribute("disabled");
+    document.querySelector(".clear-canvas-button").removeAttribute("disabled");
   }
 
   function setErrorMsg(msg) {
@@ -143,22 +146,22 @@ function scribble() {
   }
 
   function showTitleModal() {
-    const t = document.getElementsByClassName("titleModal")[0];
+    const t = document.getElementsByClassName("title-modal")[0];
     t.style.zIndex = 10;
   }
 
   function hideTitleModal() {
-    const t = document.getElementsByClassName("titleModal")[0];
+    const t = document.getElementsByClassName("title-modal")[0];
     t.style.zIndex = -1;
   }
 
   function disablePostButton() {
-    const tb = document.getElementsByClassName("titleButton")[0];
+    const tb = document.getElementsByClassName("title-button")[0];
     tb.setAttribute("disabled", "true");
   }
 
   function enablePostButton() {
-    const tb = document.getElementsByClassName("titleButton")[0];
+    const tb = document.getElementsByClassName("title-button")[0];
     tb.removeAttribute("disabled");
   }
 
@@ -166,7 +169,7 @@ function scribble() {
     enable();
     hideTitleModal();
     if (isBlank()) {
-      document.querySelector(".submitButton").setAttribute("disabled", "");
+      document.querySelector(".submit-button").setAttribute("disabled", "");
     }
   }
 
@@ -178,7 +181,7 @@ function scribble() {
     showTitleModal();
     disablePostButton();
     
-    const it = document.getElementsByClassName("inputTitle")[0];
+    const it = document.getElementsByClassName("input-title")[0];
     it.addEventListener("input", (event) => {
       if (event.target.value) {
         enablePostButton();
@@ -186,10 +189,12 @@ function scribble() {
         disablePostButton();
       }
     });
+
+    document.getElementsByClassName("input-title")[0].focus();
   }
 
   async function post(e) {
-    const t = document.getElementsByClassName("inputTitle")[0];
+    const t = document.getElementsByClassName("input-title")[0];
     if (t.value === "") {
       return;
     }
@@ -219,18 +224,18 @@ function scribble() {
     }
 
     id = res.success
-    window.location.href = '/index.php?scribble=' + id;
+    window.location.href = '/scribble.php?id=' + id;
 
     return false; // this is so the normal form handler doesn't resume after
   }
 
-  let sb = document.getElementsByClassName("submitButton")[0];
+  let sb = document.getElementsByClassName("submit-button")[0];
   sb.addEventListener('click', submit);
 
-  let tb = document.getElementsByClassName("titleButton")[0];
+  let tb = document.getElementsByClassName("title-button")[0];
   tb.addEventListener('click', post);
 
-  let ctm = document.getElementsByClassName("closeTitleModal")[0];
+  let ctm = document.getElementsByClassName("close-title-modal")[0];
   ctm.addEventListener('click', close);
 }
 

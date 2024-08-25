@@ -5,7 +5,6 @@ async function populateAvatar() {
     console.log(response.text);
   }
   const res = await response.json();
-  console.log(res)
   av.src = res['success'];
 }
 

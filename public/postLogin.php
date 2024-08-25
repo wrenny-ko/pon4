@@ -4,7 +4,7 @@
   require_once "../include/common/enableLogging.php"; //TODO remove
 
   require_once "../include/DatabaseHandler.php";
-  require_once "../include/Login.php";
+  require_once "../include/User.php";
   require_once "../include/LoginController.php";
 
   // redirect if invalid request

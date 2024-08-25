@@ -3,15 +3,17 @@
 class Scribble extends DatabaseHandler {
   protected $username;
   protected $userID;
+  protected $title;
   protected $data_url;
   protected $id;
   protected $avatarID;
+  protected $scribbleList;
 
   public function getDataURL() {
     return $this->data_url;
   }
 
-  protected function createScribble($username, $data_url) {
+  protected function createScribble($username, $title, $data_url) {
     $sql = "SELECT id FROM users WHERE username = ?";
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
@@ -26,12 +28,12 @@ class Scribble extends DatabaseHandler {
       $uid = $row['id'];
     }
 
-    $sql = "INSERT INTO scribbles (user, data_url) VALUES (?, ?)";
+    $sql = "INSERT INTO scribbles (user, title, data_url) VALUES (?, ?, ?)";
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
 
     try {
-      if ( !$statement->execute(array($uid, $data_url)) ) {
+      if ( !$statement->execute(array($uid, $title, $data_url)) ) {
         return "Database insert failed.";
       }
     } catch (Exception $e) {
@@ -99,7 +101,8 @@ class Scribble extends DatabaseHandler {
   }
 
   protected function readScribble($id) {
-    $sql = "SELECT * FROM scribbles WHERE id = ?";
+    $sql = "SELECT users.username, scribbles.id, scribbles.title, scribbles.data_url 
+     FROM scribbles INNER JOIN users ON users.id = scribbles.user  WHERE scribbles.id = ?";
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
 
@@ -112,7 +115,9 @@ class Scribble extends DatabaseHandler {
     }
 
     $row = $statement->fetch();
-    $this->username = $row['user'];
+    $this->id       = $row['id'];
+    $this->username = $row['username'];
+    $this->title    = $row['title'];
     $this->data_url = $row['data_url'];
 
     return "";
@@ -137,13 +142,16 @@ class Scribble extends DatabaseHandler {
 
   protected function getScribble() {
     return array(
-      'username' => $this->username, 
+      'id'       => $this->id,
+      'username' => $this->username,
+      'title'    => $this->title,
       'data_url' => $this->data_url
     );
   }
 
-  protected function setScribble($username, $data_url) {
+  protected function setScribble($username, $title, $data_url) {
     $this->username = $username;
+    $this->title    = $title;
     $this->data_url = $data_url;
   }
 
@@ -186,6 +194,26 @@ class Scribble extends DatabaseHandler {
     if (!empty($error)) {
       return "Couldn't update avatars. " . $error;
     }
+
+    return "";
+  }
+
+  // returns an array of scribble ids and titles
+  protected function getScribbleList() {
+    $sql = "SELECT users.username, scribbles.id, scribbles.title, scribbles.data_url 
+     FROM scribbles INNER JOIN users ON users.id = scribbles.user";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute() ) {
+      return "Database lookup failed.";
+    }
+
+    if ($statement->rowCount() === 0) {
+      return "No scribbles exist.";
+    }
+
+    $this->scribbleList = $statement->fetchAll();
 
     return "";
   }

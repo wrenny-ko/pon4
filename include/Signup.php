@@ -6,10 +6,11 @@ class Signup extends DatabaseHandler {
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
 
+    $escaped_username = htmlspecialchars($username);
     $hashed = $this->saltAndHash($password);
 
     $error = "";
-    if(!$statement->execute(array($username, $email, $hashed))) {
+    if(!$statement->execute(array($escaped_username, $email, $hashed))) {
       $error = "Database error.";
     }
 

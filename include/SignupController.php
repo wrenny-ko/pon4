@@ -1,6 +1,6 @@
 <?php
 
-class SignupController extends Signup {
+class SignupController extends User {
   private $username;
   private $email;
   private $password;
@@ -46,9 +46,9 @@ class SignupController extends Signup {
       $this->signupError($error);
     }
 
-    $error = $this->checkUserExists($this->username, $this->email);
+    $error = $this->checkUserExistsEmail($this->username, $this->email);
     if (!empty($error)) {
-      $error = "Username check failed. " . $error;
+      $error = "Failed check. " . $error;
       $this->signupError($error);
     }
 

@@ -22,15 +22,15 @@
         </div>
         <div class="inputField">
           <div class="fieldLabel">Username (alphanumeric)</div>
-          <input type="text" class="textInput inputUsername" name="username"/>
+          <input type="text" class="textInput inputUsername" name="username" maxlength="20"/>
         </div>
         <div class="inputField">
           <div class="fieldLabel">Email</div>
-          <input type="text" class="textInput inputEmail" name="email"/>
+          <input type="text" class="textInput inputEmail" name="email" maxlength="40"/>
         </div>
         <div class="inputField">
           <div class="fieldLabel">Password (alphanumeric)</div>
-          <input type="text" class="textInput inputPassword" name="password"/>
+          <input type="text" class="textInput inputPassword" name="password" maxlength="40"/>
         </div>
         <input class="submitButton" type="submit" value="Submit"/>
         <div class="navToLogin">

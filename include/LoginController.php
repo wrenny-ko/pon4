@@ -1,6 +1,6 @@
 <?php
 
-class LoginController extends Login {
+class LoginController extends User {
   private $username;
   private $password;
 

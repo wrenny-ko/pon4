@@ -23,7 +23,7 @@
       if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) {
         echo "";
         $username = $_SESSION['username'];
-        echo "<a href=\"/user/$username\" class=\"account\">";
+        echo "<a href=\"/user.php\" class=\"account\">";
         echo "<img class=\"avatar\" icon/>";
         echo "$username";
         echo "</a>";
