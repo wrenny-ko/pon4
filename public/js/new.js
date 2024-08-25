@@ -27,6 +27,8 @@ class LineData {
 }
 
 function scribble() {
+  document.querySelector(".submitButton").setAttribute("disabled", "");
+
   let c = document.getElementsByClassName("pad")[0];
   let ctx = c.getContext("2d");
 
@@ -73,6 +75,8 @@ function scribble() {
 
     pt = new Point(position.x, position.y);
     ld.recordPoint(pt);
+
+    document.querySelector(".submitButton").removeAttribute("disabled");
   }
 
   function mouseEnter(e) {
@@ -133,6 +137,11 @@ function scribble() {
     t.src = base64URL;
   }
 
+  function isBlank() {
+    let d = ctx.getImageData(0, 0, 200, 200).data;
+    return !d.some(ch => ch !== 0);
+  }
+
   function showTitleModal() {
     const t = document.getElementsByClassName("titleModal")[0];
     t.style.zIndex = 10;
@@ -140,36 +149,41 @@ function scribble() {
 
   function hideTitleModal() {
     const t = document.getElementsByClassName("titleModal")[0];
-    t.classList.add('hidden');
+    t.style.zIndex = -1;
   }
 
   function disablePostButton() {
     const tb = document.getElementsByClassName("titleButton")[0];
-    tb.setAttribute("disabled", "");
+    tb.setAttribute("disabled", "true");
   }
 
   function enablePostButton() {
     const tb = document.getElementsByClassName("titleButton")[0];
-    tb.removeAttribute("disaled", "");
+    tb.removeAttribute("disabled");
   }
 
   function close() {
     enable();
     hideTitleModal();
+    if (isBlank()) {
+      document.querySelector(".submitButton").setAttribute("disabled", "");
+    }
   }
 
+  // popup with the title input before posting
   async function submit(e) {
     disable();
 
     drawThumb();
     showTitleModal();
+    disablePostButton();
     
     const it = document.getElementsByClassName("inputTitle")[0];
     it.addEventListener("input", (event) => {
-      if (event.target.value === "") {
-        disablePostButton();
-      } else {
+      if (event.target.value) {
         enablePostButton();
+      } else {
+        disablePostButton();
       }
     });
   }

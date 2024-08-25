@@ -46,4 +46,5 @@
       </form>
     </div>
   </div>
+  <script src="js/fetchAvatar.js"></script>
 </body>

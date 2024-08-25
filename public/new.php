@@ -26,7 +26,7 @@
     <div class="titleLabel">What do you want to call it?</div>
     <input type="text" class="textInput inputTitle"/>
     <input type="button" class="button titleButton" value="Post it!"/>
-    <input type="button" class="closeTitleModal button" value="Go back!"/>
+    <input type="button" class="button closeTitleModal" value="Go back!"/>
   </div>
   <script src="js/fetchAvatar.js"></script>
   <script src="js/new.js"></script>
