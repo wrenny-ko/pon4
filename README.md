@@ -16,7 +16,7 @@ A simple sample website for drawing and viewing doodles.
 - Docker
 
 ## Features:
-- Rudimentary signup and login system with thorough checks
+- Rudimentary signup and login system with thorough checks. Passwords salted and hashed using hash_pbkdf2
 - New-upload page for mouse-input drawings
 - User avatars using posted drawings
 - Logged-in users, while viewing the drawing pages, can click on a button to set their avatar to that drawing
