@@ -1,0 +1,12 @@
+async function populateAvatar() {
+  let av = document.getElementsByClassName('avatar')[0];
+  const response = await fetch("avatar.php");
+  if (response.status !== 200) {
+    console.log(response.text);
+  }
+  const res = await response.json();
+  console.log(res)
+  av.src = res['success'];
+}
+
+populateAvatar();

@@ -8,42 +8,12 @@
   }
 ?>
 
-<head>
-  <link rel="icon" href="favicon.ico" type="image/x-icon" />
-  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
-  <link rel="stylesheet" href="main.css" type="text/css">
-  <link rel="stylesheet" href="login.css" type="text/css">
+<?php require_once("../include/common/header.php"); ?>
+  <link rel="stylesheet" href="css/login.css" type="text/css">
 </head>
+
 <body>
-  <div class="navbar">
-    <div class="logo">
-      <a href="/">
-        <img src="/favicon.ico" class="icon nav-entry" alt="Pon4 logo"/>
-      </a>
-    </div>
-    <div class="newPost">
-      <a href="/new.php">
-        <img src="/newpost.png" class="icon nav-entry" alt="newpost"/>
-      </a>
-    </div>
-    <div class="account nav-entry">
-      <?php
-        if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) {
-          echo "<img class=\"avatar\"/>";
-          $username = $_SESSION['username'];
-          echo "<a href=\"/user?username=$username\" class=\"account\">";
-          echo "$username";
-          echo "</a>";
-        } else {
-      ?>
-        <a href="/login.php" class="account">
-          Login
-        </a>
-      <?php
-        }
-      ?>
-    </div>
-  </div>
+  <?php require_once("../include/common/navbar.php"); ?>
   <div class="bg">
     <div class="login">
       <form class="loginForm" action="postLogin.php" method="post">
@@ -72,5 +42,6 @@
       </form>
     </div>
   </div>
-  <script src="login.js"></script>
+  <script src="js/fetchAvatar.js"></script>
+  <script src="js/login.js"></script>
 </body>

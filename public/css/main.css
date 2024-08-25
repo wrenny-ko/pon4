@@ -21,6 +21,23 @@
   background-color: rgba(255, 255, 255, 0.25);
 }
 
+.tooltip-text {
+  display: inline-block;
+  visibility: hidden;
+  background-color: rgba(255,255,255,0.2);
+  color: #5e5c64;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 1;
+  top: 50px;
+}
+
+.nav-entry:hover + .tooltip-text {
+  visibility: visible;
+}
+
 .nav-left {
   display: flex;
 }

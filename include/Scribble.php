@@ -118,6 +118,23 @@ class Scribble extends DatabaseHandler {
     return "";
   }
 
+  protected function deleteScribble($id) {
+    $sql = "DELETE FROM scribbles WHERE id = ?";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($id)) ) {
+      return "Database delete failed.";
+    }
+
+    // mysql should return 1 row
+    if ($statement->rowCount() === 0) {
+      return "Scribble does not exist.";
+    }
+
+    return "";
+  }
+
   protected function getScribble() {
     return array(
       'username' => $this->username, 
@@ -130,7 +147,7 @@ class Scribble extends DatabaseHandler {
     $this->data_url = $data_url;
   }
 
-  public function readScribbleAvatar($username) {
+  protected function readScribbleAvatar($username) {
     $error = $this->readAvatarID($username);
     if (!empty($error)) {
       return "Error reading avatar ID. " . $error;
@@ -139,6 +156,35 @@ class Scribble extends DatabaseHandler {
     $error = $this->readScribble($this->avatarID);
     if (!empty($error)) {
       return "Error reading scribble avatar. " . $error;
+    }
+
+    return "";
+  }
+
+  // sets all user avatars with $id to the default avatar
+  protected function setDefaultAvatars($id) {
+    $sql = "UPDATE scribbles SET avatar = 1 WHERE id = ?";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($id)) ) {
+      return "Database update failed.";
+    }
+
+    return "";
+  }
+
+  // delete database row for the scribble
+  // set all users with scribble avatar to the default avatar
+  public function deleteScribbleUpdateAvatars($id) {
+    $error = $this->deleteScribble($id);
+    if (!empty($error)) {
+      return "Couldn't delete scribble. " . $error;
+    }
+
+    $error = $this->setAvatars($id);
+    if (!empty($error)) {
+      return "Couldn't update avatars. " . $error;
     }
 
     return "";

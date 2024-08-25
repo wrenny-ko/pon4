@@ -187,7 +187,7 @@ function scribble() {
     tb.setAttribute("disabled", "");
   }
 
-  function disablePostButton() {
+  function enablePostButton() {
     const tb = document.getElementsByClassName("titleButton")[0];
     tb.removeAttribute("disaled", "");
   }
@@ -244,6 +244,7 @@ function scribble() {
     }
 
     id = res.success
+    window.location.href = '/index.php' + id;
 /*
     if (response.error){
       // on success, route to the new video's page
@@ -264,22 +265,4 @@ function scribble() {
   ctm.addEventListener('click', close);
 }
 
-async function populateAvatar() {
-  let av = document.getElementsByClassName('avatar')[0];
-  const response = await fetch("avatar.php");
-  if (response.status !== 200) {
-    //setErrorMsg("Error: " + res.error);
-    console.log(response.text);
-  }
-  const res = await response.json();
-  console.log(res)
-  av.src = res['success'];
-}
-
-populateAvatar();
 scribble();
-
-
-
-
-
