@@ -2,6 +2,13 @@
 
 A simple sample website for drawing and viewing doodles.
 
+<img src="https://github.com/user-attachments/assets/36bf3238-1237-4c77-813a-5634c0455bdd" alt="cardcart" width="400"/>
+<img src="https://github.com/user-attachments/assets/46217a65-b01c-4847-814d-4c8f8e1c8a99" alt="canteen" width="400"/>
+<img src="https://github.com/user-attachments/assets/9197778c-2479-4043-8ed6-60b3064158c3" alt="canteen" width="400"/>
+<img src="https://github.com/user-attachments/assets/44e54990-f7fe-4625-96bb-342c8efd6fec" alt="canteen" width="400"/>
+<img src="https://github.com/user-attachments/assets/93aef1c7-5621-4dd8-9cf0-a671fa466084" alt="canteen" width="400"/>
+<img src="https://github.com/user-attachments/assets/5a860ece-5f1c-47f2-b4e7-9f646175b605" alt="canteen" width="400"/>
+
 ## Technology:
 - OOP PHP
 - Vanilla JS
