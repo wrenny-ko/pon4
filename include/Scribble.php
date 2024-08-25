@@ -35,7 +35,7 @@ class Scribble extends DatabaseHandler {
     //$title = html_entity_decode($title, ENT_QUOTES | ENT_XML1, 'UTF-8');
 
     try {
-      if ( !$statement->execute(array($uid, $title, $data_url)) ) {
+      if ( !$statement->execute(array($uid, htmlspecialchars($title), htmlspecialchars($data_url))) ) {
         return "Database insert failed.";
       }
     } catch (Exception $e) {
@@ -63,6 +63,8 @@ class Scribble extends DatabaseHandler {
 
     $row = $statement->fetch();
     $this->userID = $row['id'];
+
+    $statement = null;
     return "";
   }
 
@@ -81,25 +83,8 @@ class Scribble extends DatabaseHandler {
 
     $row = $statement->fetch();
     $this->avatarID = $row['avatar'];
-    return "";
-  }
 
-  // TODO remove if unused
-  protected function readUserName($id) {
-    $sql = "SELECT username FROM users WHERE id = ?";
-    $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($id)) ) {
-      return "Database lookup failed.";
-    }
-
-    if ($statement->rowCount() === 0) {
-      return "User does not exist.";
-    }
-
-    $row = $statement->fetch();
-    $this->username = $row['username'];
+    $statement = null;
     return "";
   }
 
@@ -120,9 +105,10 @@ class Scribble extends DatabaseHandler {
     $row = $statement->fetch();
     $this->id       = $row['id'];
     $this->username = $row['username'];
-    $this->title    = $row['title'];
-    $this->data_url = $row['data_url'];
+    $this->title    = htmlspecialchars_decode($row['title']);
+    $this->data_url = htmlspecialchars_decode($row['data_url']);
 
+    $statement = null;
     return "";
   }
 
@@ -140,6 +126,7 @@ class Scribble extends DatabaseHandler {
       return "Scribble does not exist.";
     }
 
+    $statement = null;
     return "";
   }
 
@@ -150,12 +137,6 @@ class Scribble extends DatabaseHandler {
       'title'    => $this->title,
       'data_url' => $this->data_url
     );
-  }
-
-  protected function setScribble($username, $title, $data_url) {
-    $this->username = $username;
-    $this->title    = $title;
-    $this->data_url = $data_url;
   }
 
   protected function readScribbleAvatar($username) {
@@ -182,6 +163,7 @@ class Scribble extends DatabaseHandler {
       return "Database update failed.";
     }
 
+    $statement = null;
     return "";
   }
 
@@ -193,11 +175,12 @@ class Scribble extends DatabaseHandler {
       return "Couldn't delete scribble. " . $error;
     }
 
-    $error = $this->setAvatars($id);
+    $error = $this->setDefaultAvatars($id);
     if (!empty($error)) {
       return "Couldn't update avatars. " . $error;
     }
 
+    $statement = null;
     return "";
   }
 
@@ -216,8 +199,15 @@ class Scribble extends DatabaseHandler {
       return "No scribbles exist.";
     }
 
-    $this->scribbleList = $statement->fetchAll();
+    $list = array();
+    while ($row = $statement->fetch()) {
+      $row['title'] = htmlspecialchars_decode($row['title']);
+      $list[] = $row;
+    }
 
+    $this->scribbleList = $list;
+
+    $statement = null;
     return "";
   }
 
@@ -236,8 +226,15 @@ class Scribble extends DatabaseHandler {
       return "No scribbles exist.";
     }
 
-    $this->scribbleList = $statement->fetchAll();
+    $list = array();
+    while ($row = $statement->fetch()) {
+      $row['title'] = htmlspecialchars_decode($row['title']);
+      $list[] = $row;
+    }
 
+    $this->scribbleList = $list;
+
+    $statement = null;
     return "";
   }
 
@@ -248,8 +245,7 @@ class Scribble extends DatabaseHandler {
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
 
-    $search = '%' . htmlspecialchars_decode($search) . '%';
-    //$search = '%' . $search . '%';
+    $search = '%' . htmlspecialchars($search) . '%';
     if ( !$statement->execute(array($search)) ) {
       return "Database lookup failed.";
     }
@@ -258,8 +254,15 @@ class Scribble extends DatabaseHandler {
       return "No scribbles exist.";
     }
 
-    $this->scribbleList = $statement->fetchAll();
+    $list = array();
+    while ($row = $statement->fetch()) {
+      $row['title'] = htmlspecialchars_decode($row['title']);
+      $list[] = $row;
+    }
 
+    $this->scribbleList = $list;
+
+    $statement = null;
     return "";
   }
 }

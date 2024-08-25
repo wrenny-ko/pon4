@@ -47,7 +47,7 @@ async function populateScribbleCards() {
     newTitle.innerText = title;
     newCard.appendChild(newTitle);
 
-    
+    //TODO add author name and avatar
   }
 }
 

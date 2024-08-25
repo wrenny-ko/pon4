@@ -1,31 +1,3 @@
-class Point {
-  x;
-  y;
-
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-}
-
-class LineData {
-  points = [];
-  linestrings = [];
-
-  startRecording(pt) {
-    this.points = [pt];
-  }
-
-  recordPoint(pt) {
-    this.points.push(pt)
-  }
-
-  stopRecording() {
-    this.linestrings.push(this.points);
-    this.points = [];
-  }
-}
-
 function scribble() {
   document.querySelector(".submit-button").setAttribute("disabled", "");
 
@@ -38,6 +10,7 @@ function scribble() {
   let drawing = false;
   let strokes = [];
 
+  // keeps canvas aligned
   function resize(e) {
     let rect = c.getBoundingClientRect();
     offset = {
@@ -52,12 +25,12 @@ function scribble() {
 
   resize();
 
+  //TODO parameterize these later for added user fun
   ctx.lineWidth = 2;
   ctx.lineCap = 'round';
   ctx.strokeStyle = '#c0392b';
 
-  let ld = new LineData();
-
+  // draw on canvas if drawing flag and if mouse button is still down
   function mouseMove(e) {
     if (e.button !== 0 || !drawing) {
       return;
@@ -73,12 +46,10 @@ function scribble() {
     ctx.lineTo(position.x, position.y);
     ctx.stroke();
 
-    pt = new Point(position.x, position.y);
-    ld.recordPoint(pt);
-
     document.querySelector(".submit-button").removeAttribute("disabled");
   }
 
+  // set position for drawing when cursor enters the canvas
   function mouseEnter(e) {
     position = {
       x: e.clientX + offset.x,
@@ -86,19 +57,17 @@ function scribble() {
     }
   }
 
+  // set position for drawing and set the drawing flag
   function mouseDown(e) {
     drawing = true;
     position = {
       x: e.clientX + offset.x,
       y: e.clientY + offset.y,
     }
-    let pt = new Point(position.x, position.y);
-    ld.startRecording(pt);
   }
 
   function stopDrawing(e) {
     drawing = false;
-    ld.stopRecording();
   }
 
   function clearCanvas(e) {

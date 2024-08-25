@@ -41,8 +41,7 @@
     function search() {
       event.preventDefault();
       let st = document.getElementsByClassName('search-text')[0];
-      query = st.value;
-      url = 'index.php?search=' + encodeURIComponent(query);
+      let url = 'index.php?search=' + encodeURIComponent(st.value);
       window.location.href = url;
       false;
     }

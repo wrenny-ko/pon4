@@ -16,7 +16,6 @@
   $password = $_POST["password"];
 
   $loginCtr = new LoginController($username, $password);
-
   $loginCtr->loginUser();
 
   header("location: user.php");

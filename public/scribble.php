@@ -12,7 +12,7 @@
     header("location: index.php");
   }
 
-  // require id to view this page
+  // require a scribble id to view this page
   if (!isset($_GET["id"])) {
       header("location: index.php");
   }

@@ -87,6 +87,7 @@ class User extends DatabaseHandler {
       return "Database update failed.";
     }
 
+    $statement = null;
     return "";
   }
 

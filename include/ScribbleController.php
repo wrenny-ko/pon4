@@ -33,13 +33,6 @@ class ScribbleController extends Scribble {
 
     session_start();
 
-    /*
-    // enforce logged in
-    if (!isset($_SESSION['username'])) {
-      header("location: index.php");
-    }
-    */
-
     $username = "anonymous";
     if (isset($_SESSION['username'])) {
       $username = $_SESSION['username'];
@@ -59,8 +52,8 @@ class ScribbleController extends Scribble {
       $this->error("Improperly formatted json fields.");
     }
 
-    if (strlen($scribble->title) > 30) {
-      $this->error("Title must be under 30 characters.");
+    if (strlen($scribble->title) >= 30) {
+      $this->error("Titles have max character limits of 30.");
     }
 
     $error = $this->createScribble($username, $scribble->title, $scribble->data_url);
@@ -95,26 +88,36 @@ class ScribbleController extends Scribble {
     }
 
     if (isset($_GET["id"])) {
+      // search a single scribble id
+
       $error = $this->readScribble($_GET["id"]);
       if (!empty($error)) {
         $this->error("Error reading scribble. " . $error);
       }
+
       echo json_encode( array("scribble" => $this->getScribble()) );
+
     } else if(isset($_GET["search"])) {
+      // search titles by a query string
+
       //TODO parse "user:<username>" for separate search
-      //TODO not searching special chars correctly
-      //$decoded = html_entity_decode($_GET["search"], ENT_QUOTES | ENT_XML1, 'UTF-8');
       $error = $this->getScribbleSearchTitle($_GET["search"]);
       if (!empty($error)) {
         $this->error("Error searching scribbles. " . $error);
       }
+
       echo json_encode( array("scribbles" => $this->scribbleList) );
+
     } else {
+      // search for all scribbles
+
       $error = $this->getScribbleList();
       if (!empty($error)) {
         $this->error("Error searching scribbles. " . $error);
       }
+
       echo json_encode( array("scribbles" => $this->scribbleList) );
+
     }
   }
 }

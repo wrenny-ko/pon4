@@ -12,7 +12,6 @@ class DatabaseHandler {
     return $pdo;
   }
 }
-?>
 
 
 

@@ -1,5 +1,4 @@
 <?php
-
 class SignupController extends User {
   private $username;
   private $email;
@@ -16,7 +15,7 @@ class SignupController extends User {
     $this->password = $password;
   }
 
-  private function signupError($msg) {
+  private function error($msg) {
     header("location: signup.php?error=" . htmlspecialchars($msg));
     exit();
   }
@@ -25,37 +24,37 @@ class SignupController extends User {
     $error = $this->checkEmptyInput();
     if (!empty($error)) {
       $error = "empty input. " . $error;
-      $this->signupError($error);
+      $this->error($error);
     }
 
     $error = $this->validateUsername($this->username);
     if (!empty($error)) {
       $error = "invalid username. " . $error;
-      $this->signupError($error);
+      $this->error($error);
     }
 
     $error = $this->validateEmail($this->email);
     if (!empty($error)) {
       $error = "invalid email. " . $error;
-      $this->signupError($error);
+      $this->error($error);
     }
 
     $error = $this->validatePassword($this->password);
     if (!empty($error)) {
       $error = "invalid password. " . $error;
-      $this->signupError($error);
+      $this->error($error);
     }
 
     $error = $this->checkUserExistsEmail($this->username, $this->email);
     if (!empty($error)) {
       $error = "Failed check. " . $error;
-      $this->signupError($error);
+      $this->error($error);
     }
 
     $error = $this->createUser($this->username, $this->email, $this->password);
     if (!empty($error)) {
       $error = "could not create user. " . $error;
-      $this->signupError($error);
+      $this->error($error);
     }
 
     session_start();

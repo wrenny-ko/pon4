@@ -1,5 +1,4 @@
 <?php
-
 class LoginController extends User {
   private $username;
   private $password;
