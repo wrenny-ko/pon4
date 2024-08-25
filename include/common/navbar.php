@@ -19,17 +19,18 @@
     </div>
   </div>
   <div class="account nav-entry">
-    <img class="avatar" icon/>
     <?php
       if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) {
         echo "";
         $username = $_SESSION['username'];
         echo "<a href=\"/user/$username\" class=\"account\">";
+        echo "<img class=\"avatar\" icon/>";
         echo "$username";
         echo "</a>";
       } else {
     ?>
       <a href="/login.php" class="account">
+        <img class="avatar" icon/>
         Login
       </a>
     <?php

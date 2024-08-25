@@ -110,32 +110,6 @@ function scribble() {
   let reset = document.getElementsByClassName("clearCanvasButton")[0];
   reset.addEventListener('click', clearCanvas);
 
-  
-/*
-  function compress() {
-    let rect = c.getBoundingClientRect();
-    const image = ctx.getImageData(rect.x, rect.y, 200, 200);
-    const threshold = 100;
-    let bits = [];
-    for (let i = 0; i < image.data.length; i += 4) {
-      let bit = 0;
-      if (image.data[i] + image.data[i+1] + image.data[i+2] < threshold) {
-        bit = 1;
-      }
-      bits.push(bit)
-    }
-
-    let compressed = "";
-    for (let i = 0; i < bits.length; i += 4) {
-      let combined = i + ((i+1)<<1) + ((i+1)<<2) + ((i+1)<<3)
-      hex = parseInt(combined, 10).toString(16);
-      let zerofilled = ('0000'+hex).slice(-4);
-      compressed = compressed + zerofilled;
-    }
-      console.log(compressed)
-      console.log(ctx.canvas.toDataURL())
-  }*/
-
   function disable() {
     document.querySelector(".spinner").classList.remove('hidden');
     document.querySelector(".submitButton").setAttribute("disabled", "");
@@ -153,19 +127,6 @@ function scribble() {
     document.querySelector(".error").innerHTML = msg;
   }
 
-/*
-  function drawThumb() {
-    let d = ctx.getImageData(0, 0, 200, 200);
-    const cv = document.getElementsByClassName("thumb")[0];
-    cv.width = 100;
-    cv.height = 100;
-    cvctx = cv.getContext("2d")
-    cvctx.putImageData(d, 0, 0);
-    
-    ctx.scale(0.5, 0.5);
-    ctx.drawImage(cv, 0, 0);
-  }
-  */
   function drawThumb() {
     const base64URL = ctx.canvas.toDataURL();
     const t = document.getElementsByClassName("thumb")[0];

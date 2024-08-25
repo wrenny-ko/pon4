@@ -92,6 +92,7 @@
   width: 40px;
   height: 40px;
   border-radius: 40px;
+  margin-right: 10px;
 }
 
 .account {
@@ -104,6 +105,7 @@
   font-weight: bold;
   color: #33d17a;
   text-decoration: none;
+  justify-content: space-between;
 }
 
 .bg {
