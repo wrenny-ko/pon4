@@ -78,6 +78,18 @@ class User extends DatabaseHandler {
     return "";
   }
 
+  protected function updateAvatar($scribble_id, $username) {
+    $sql = "UPDATE users SET avatar = ? WHERE username = ?";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($scribble_id, $username)) ) {
+      return "Database update failed.";
+    }
+
+    return "";
+  }
+
   // generate 64 bytes hex string of hashed password with appended salt
   //   - 32 bytes hex string of hashed password
   //   - 32 bytes hex string of salt

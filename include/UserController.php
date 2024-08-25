@@ -1,20 +1,14 @@
 <?php
 
-class LoginController extends User {
+class UserController extends User {
   private $username;
-  private $password;
 
-  private $usernameMaxLength = 20;
-  private $passwordMinLength = 5;
-  private $passwordMaxLength = 40;
-
-  public function __construct($username, $password) {
+  public function __construct($username) {
     $this->username = $username;
-    $this->password = $password;
   }
 
   private function error($msg) {
-    header("location: login.php?error=" . htmlspecialchars($msg));
+    header("location: user.php?error=" . htmlspecialchars($msg));
     exit();
   }
 
@@ -22,31 +16,31 @@ class LoginController extends User {
     $error = $this->checkEmptyInput();
     if (!empty($error)) {
       $error = "empty login fields. " . $error;
-      $this->error($error);
+      $this->loginError($error);
     }
 
     $error = $this->validateUsername($this->username);
     if (!empty($error)) {
       $error = "invalid username. " . $error;
-      $this->error($error);
+      $this->loginError($error);
     }
 
     $error = $this->validatePassword($this->password);
     if (!empty($error)) {
       $error = "invalid password. " . $error;
-      $this->error($error);
+      $this->loginError($error);
     }
 
     $error = $this->checkUserExists($this->username);
     if (!empty($error)) {
       $error = "Username check failed. " . $error;
-      $this->error($error);
+      $this->loginError($error);
     }
 
     $error = $this->comparePassword($this->username, $this->password);
     if (!empty($error)) {
       $error = "Password check failed. " . $error;
-      $this->error($error);
+      $this->loginError($error);
     }
 
     session_start();
@@ -98,5 +92,15 @@ class LoginController extends User {
     }
 
     return "";
+  }
+
+  public function setAvatar($scribble_id, $username) {
+    $error = $this->updateAvatar($scribble_id, $username);
+    if (!empty($error)) {
+      $error = "Avatar update failed. " . $error;
+      $this->error($error);
+    }
+
+    echo json_encode(array("success" => "true"));
   }
 }

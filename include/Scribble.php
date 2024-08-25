@@ -82,6 +82,7 @@ class Scribble extends DatabaseHandler {
     return "";
   }
 
+  // TODO remove if unused
   protected function readUserName($id) {
     $sql = "SELECT username FROM users WHERE id = ?";
     $pdo = $this->connect();
@@ -171,7 +172,7 @@ class Scribble extends DatabaseHandler {
 
   // sets all user avatars with $id to the default avatar
   protected function setDefaultAvatars($id) {
-    $sql = "UPDATE scribbles SET avatar = 1 WHERE id = ?";
+    $sql = "UPDATE users SET avatar = 1 WHERE avatar = ?";
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
 

@@ -37,14 +37,15 @@
         </div>
         <div class="scribble-title"></div>
       </div>
+      <?php
+        if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) {
+          $username = $_SESSION['username'];
+          echo "<input type=\"button\" class=\"button set-avatar-button\"
+                value=\"Set avatar\" onclick=\"setAvatar('$username');\"/>";
+        }
+      ?>
     </div>
-    <?php
-      if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) {
-        $username = $_SESSION['username'];
-        echo "<input type=\"button\" class=\"button set-avatar-button\"
-              value=\"Set avatar\" onclick=\"setAvatar('$username');\"/>";
-      }
-    ?>
+    
   </div>
   <script src="js/fetchAvatar.js"></script>
   <script src="js/scribble.js"></script>

@@ -1,6 +1,6 @@
 async function populateAvatar() {
   let av = document.getElementsByClassName('avatar')[0];
-  const response = await fetch("avatar.php");
+  const response = await fetch("getAvatar.php");
   if (response.status !== 200) {
     console.log(response.text);
   }

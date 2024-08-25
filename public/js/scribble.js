@@ -21,15 +21,20 @@ console.log(scribble)
 
 async function setAvatar(username) {
   let sc = document.getElementsByClassName('scribble-container')[0];
-  const response = await fetch("http://localhost:80/postAvatar.php?id=" + sc.id + "&username=" + username);
+
+  const response = await fetch("http://localhost:80/putAvatar.php?id=" + sc.id, {
+    method: 'PUT',
+  });
+
   if (response.status !== 200) {
     //TODO show error on page
-    console.log(response.text);
+    res = await response.json();
+    console.log(res);
   }
 
   // trigger refresh
   // TODO only refetch avatar instead
-  location.reload();
+  location.href = "http://localhost:80/scribble.php?id=" + sc.id;
 }
 
 populateScribble();

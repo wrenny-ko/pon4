@@ -4,6 +4,7 @@
   height: 100%;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
 }
 
 .scribble-container {
@@ -42,4 +43,21 @@
   font-size: 2.5rem;
   text-wrap: wrap;
   text-align: center;
+}
+
+.set-avatar-button {
+  width: 25%;
+  background-color: #9141ac;
+  margin: 8px 0;
+  font-size: 1.3rem;
+  border: 1px solid #813d9c;
+  border-radius: 4px;
+  box-sizing: border-box;
+  transition: cursor 0.4s;
+  transition: background-color 0.4s;
+}
+
+.set-avatar-button:hover:not([disabled]) {
+  background-color: rgba(191,127,191, 1);
+  cursor: pointer;
 }
