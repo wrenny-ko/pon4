@@ -244,13 +244,7 @@ function scribble() {
     }
 
     id = res.success
-    window.location.href = '/index.php' + id;
-/*
-    if (response.error){
-      // on success, route to the new video's page
-      window.location.href = '/videos/' + res.video;
-    }*/
-
+    window.location.href = '/index.php?scribble=' + id;
 
     return false; // this is so the normal form handler doesn't resume after
   }

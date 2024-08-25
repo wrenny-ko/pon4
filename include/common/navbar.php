@@ -12,7 +12,10 @@
       </a>
     </div>
     <div class="searchbar">
-      <input type="image" src="search.png" name="search" class="icon nav-entry"/>
+      <form class="search">
+        <input type="image" src="search.png" name="searchButton" class="icon nav-entry search-icon" onclick="alert('clicked!!');"/>
+        <input type="text" name="searchText" class="search-text" placeholder="search titles, or try by:<username>"/>
+      </form>
     </div>
   </div>
   <div class="account nav-entry">

@@ -28,5 +28,6 @@
     <input type="button" class="button titleButton" value="Post it!"/>
     <input type="button" class="closeTitleModal button" value="Go back!"/>
   </div>
-  <script src="new.js"></script>
+  <script src="js/fetchAvatar.js"></script>
+  <script src="js/new.js"></script>
 </body>

@@ -16,23 +16,23 @@
   <?php require_once("../include/common/navbar.php"); ?>
   <div class="bg">
     <div class="login">
-      <form class="loginForm" action="postLogin.php" method="post">
-        <div class="formTitle">
+      <form class="login-form" action="postLogin.php" method="post">
+        <div class="form-title">
           Login
         </div>
-        <div class="inputField">
-          <div class="fieldLabel">Username</div>
-          <input type="text" class="textInput inputUsername" name="username"/>
+        <div class="input-field">
+          <div class="field-label">Username</div>
+          <input type="text" class="text-input input-username" name="username"/>
         </div>
-        <div class="inputField">
-          <div class="fieldLabel">Password</div>
-          <input type="text" class="textInput inputPassword" name="password"/>
+        <div class="input-field">
+          <div class="field-label">Password</div>
+          <input type="text" class="text-input input-password" name="password"/>
         </div>
-        <input class="submitButton" type="submit" value="Submit"/>
-        <div class="navToSignup">
+        <input class="submit-button" type="submit" value="Submit"/>
+        <div class="nav-to-signup">
           Don't have an account? <a href="signup.php">Sign up</a> instead.
         </div>
-        <div class="errorBox">
+        <div class="error-box">
           <?php
             if (isset($_GET["error"])) {
               echo "Error: " . htmlspecialchars_decode($_GET["error"]);
