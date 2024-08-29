@@ -23,6 +23,7 @@ A simple sample website for drawing and viewing doodles.
 - Default uploader is set to "anonymous", so unauthed users can post
 - Default avatar is provided
 - Rough text search of drawings by their titles
+- Sortable leaderboard page
 
 ## Code Sample Points:
 ### Docker
@@ -35,7 +36,7 @@ A simple sample website for drawing and viewing doodles.
 ### JS/PHP/HTML interactions
 - Variety of JS/PHP/HTML examples including:
   - Imported re-useable HTML elements such as the header and the site's "navbar" via PHP require_once
-  - Error reporting through only PHP for login/signup input validation (public/signup.php and public/login.php)
+  - Client error viewing through only PHP for login/signup input validation (public/signup.php and public/login.php)
   - PHP-only POST forms (public/signup.php, public/login.php)
   - JS-intercepted POST forms (public/new.php, public/js/new.js)
   - Inline script JS intercepting a form submit. Redirects to a search page with a URL query string (include/common/navbar.php)
