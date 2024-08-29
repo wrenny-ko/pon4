@@ -1,7 +1,7 @@
 <?php
 
 class ScribbleController extends Scribble {
-  private function error($msg) {
+  public function error($msg) {
     $msg = "Scribble error. " . $msg;
     echo json_encode(array("error" => $msg));
     http_response_code(400);

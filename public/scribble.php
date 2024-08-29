@@ -3,10 +3,6 @@
 
   require_once "../include/common/enableLogging.php"; //TODO remove
 
-  require_once "../include/DatabaseHandler.php";
-  require_once "../include/Scribble.php";
-  require_once "../include/ScribbleController.php";
-
   // redirect if invalid request
   if ($_SERVER["REQUEST_METHOD"] !== 'GET') {
     header("location: index.php");
@@ -17,9 +13,18 @@
       header("location: index.php");
   }
   $id = $_GET["id"];
-?>
 
-<?php session_start(); ?>
+  session_start();
+  $username = "anonymous";
+  if (isset($_SESSION['username'])) {
+    $username = $_SESSION['username'];
+  }
+
+  require_once "../include/DatabaseHandler.php";
+  require_once("../include/Perms.php");
+
+  $perms = new Perms($username);
+?>
 <?php require_once("../include/common/header.php"); ?>
   <link rel="stylesheet" href="css/scribble.css" type="text/css">
 </head>
@@ -37,15 +42,13 @@
         </div>
         <div class="scribble-title"></div>
       </div>
-      <?php
-        if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) {
-          $username = $_SESSION['username'];
-          echo "<input type=\"button\" class=\"button set-avatar-button\"
-                value=\"Set avatar\" onclick=\"setAvatar('$username');\"/>";
-        }
-      ?>
+      <?php if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) { ?>
+        <input type="button" class="button set-avatar-button" value="Set avatar" onclick="setAvatar('<?= $_SESSION['username'];?>');"/>
+        <?php if ($perms->hasMod() || $perms->hasAdmin()) { ?>
+          <input type="button" class="button delete-button" value="Delete" onclick="deleteScribble('<?= $id;?>');"/>
+        <?php } ?>
+      <?php } ?>
     </div>
-    
   </div>
   <script src="js/fetchAvatar.js"></script>
   <script src="js/scribble.js"></script>

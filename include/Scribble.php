@@ -10,9 +10,14 @@ class Scribble extends DatabaseHandler {
   protected $id;
   protected $avatarID;
   protected $scribbleList;
+  protected $numWipedAvatars;
 
   public function getDataURL() {
     return $this->data_url;
+  }
+
+  public function getNumWipedAvatars() {
+    return $this->numWipedAvatars;
   }
 
   protected function createScribble($username, $title, $data_url) {
@@ -173,6 +178,8 @@ EOF;
     if ( !$statement->execute(array($id)) ) {
       return "Database update failed.";
     }
+
+    $this->numWipedAvatars = $statement->rowCount();
 
     $statement = null;
     return "";

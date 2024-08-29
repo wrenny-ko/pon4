@@ -7,15 +7,19 @@
   require_once "../include/User.php";
   require_once "../include/LoginController.php";
 
+  $loginCtr = new LoginController();
+
   // redirect if invalid request
   if ($_SERVER["REQUEST_METHOD"] !== 'POST') {
-    header("location: index.php");
+    $loginCtr->error("Expected POST requests only.");
   }
 
-  $username = $_POST["username"];
-  $password = $_POST["password"];
+  if (!isset($_POST["username"]) || !isset($_POST["password"])) {
+    $loginCtr->error("POST data lacking username and password.");
+  }
 
-  $loginCtr = new LoginController($username, $password);
+  $loginCtr->setUsername($_POST["username"]);
+  $loginCtr->setPassword($_POST["password"]);
   $loginCtr->loginUser();
 
-  header("location: user.php");
+  header("location: user.php?username=" . $_POST["username"]);

@@ -43,4 +43,19 @@ async function setAvatar(username) {
   location.href = "http://localhost:80/scribble.php?id=" + sc.id;
 }
 
+async function deleteScribble(id) {
+  const response = await fetch("http://localhost:80/deleteScribble.php?id=" + id, {
+    method: 'DELETE',
+  });
+
+  if (response.status !== 200) {
+    //TODO show error on page
+    res = await response.json();
+    console.log(res);
+  }
+
+  // trigger refresh
+  location.href = "http://localhost:80/index.php";
+}
+
 populateScribble();

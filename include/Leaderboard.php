@@ -22,7 +22,7 @@ class Leaderboard extends DatabaseHandler {
   private $sortDir;
   private $board;
 
-  public function __construct(LeaderboardColumn $sortCol, LeaderboardSortDir $sortDir) {
+  public function __construct(LeaderboardColumn $sortCol = LeaderboardColumn::TotalScribbles, LeaderboardSortDir $sortDir = LeaderboardSortDir::Down) {
     $this->readMaxRows();
     $this->readHidden();
     $this->sortCol = $sortCol;
@@ -43,19 +43,19 @@ class Leaderboard extends DatabaseHandler {
     $pdo = $this->connect();
     $statement = $pdo->query($sql);
 
-    $this->numRows = $statement->fetchColumn();
+    $this->maxRows = $statement->fetchColumn();
 
     $statement = null;
     return "";
   }
 
   protected function writeMaxRows($num) {
-    $sql = "UPDATE max_rows FROM leaderboard where id = 1";
+    $sql = "UPDATE leaderboard SET max_rows = ? WHERE id = 1";
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
 
     if ( !$statement->execute(array($num)) ) {
-      return "Database lookup failed.";
+      return "Database update failed.";
     }
 
     $statement = null;
@@ -135,7 +135,8 @@ EOF;
         return "Database lookup failed.";
       }
 
-      $stats["likes"] = $statement->fetchColumn();
+      $likes = $statement->fetchColumn();
+      $stats["likes"] = is_string($likes) ? $likes : 0;
 
       // find how many total dislikes the given user has
       $sql = "SELECT SUM(dislikes) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
@@ -144,7 +145,8 @@ EOF;
         return "Database lookup failed.";
       }
 
-      $stats["dislikes"] = $statement->fetchColumn();
+      $dislikes = $statement->fetchColumn();
+      $stats["dislikes"] = is_string($dislikes) ? $dislikes : 0;
 
       // calculate the like/dislike ratio
       $stats["like_ratio"] = $stats["likes"] - $stats["dislikes"];
@@ -157,7 +159,7 @@ EOF;
     array_multisort(array_column($users, $this->sortCol->value), $dir, SORT_REGULAR, $users);
 
     // truncate for final leaderboard
-    $leaderboard = array_slice($users, 0, $this->numRows);
+    $leaderboard = array_slice($users, 0, $this->maxRows);
 
     $this->board = $leaderboard;
 

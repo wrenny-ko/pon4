@@ -4,7 +4,7 @@
 if (!isset($_GET["sortCol"]) || !isset($_GET["sortDir"])) {
   $newQueryData = array();
   $newQueryData["sortCol"] = isset($_GET["sortCol"]) ? $_GET["sortCol"] : "total_scribbles";
-  $newQueryData["sortDir"] = isset($_GET["sortDir"]) ? $_GET["sortDir"] : "up";
+  $newQueryData["sortDir"] = isset($_GET["sortDir"]) ? $_GET["sortDir"] : "down";
 
   $query = http_build_query($newQueryData);
   header("location: leaderboard.php?" . $query);
@@ -20,7 +20,6 @@ require_once("../include/Perms.php");
 require_once("../include/Leaderboard.php");
 
 $perms = new Perms($username);
-
 
 $sortCol = LeaderboardColumn::TotalScribbles;
 try {
@@ -39,7 +38,7 @@ $leaderboard = new Leaderboard($sortCol, $sortDir);
 
 <?php require_once("../include/common/header.php"); ?>
   <link rel="stylesheet" href="css/leaderboard.css" type="text/css">
-  <script src="../js/jquery-3.7.1.min.js"></script>
+  <script src="js/jquery-3.7.1.min.js"></script>
 </head>
 
 <body>
@@ -54,15 +53,16 @@ $leaderboard = new Leaderboard($sortCol, $sortDir);
           <?php if ($perms->hasAdmin()) {
             if (isset($_GET["showRowNumField"])) { ?>
               <form class="set-max-rows-form">
-                <input class="set-max-rows-input" type="text" placeholder="<?= $leaderboard->getNumRows();?>"/>
-                <button class="set-max-rows-button"></button>
+                Set Max Rows
+                <input class="set-max-rows-input" type="text" name="max-rows" placeholder="<?= $leaderboard->getMaxRows();?>"/>
+                <button class="set-max-rows-button" onclick="handleSetMaxRows();">Update</button>
               </form>
-          <?php } 
-            } else { ?>
+            <?php } else { ?>
               <a class="show-form href-button" href="<?= $_SERVER['REQUEST_URI'] . "&showRowNumField=true";?>">
                 Set Max Rows
               </a>
             <?php } ?>
+          <?php } ?>
         </div>
       <?php } ?>
       <div class="leaderboard-table">
@@ -168,5 +168,7 @@ $leaderboard = new Leaderboard($sortCol, $sortDir);
     }
     dirButton.href = 'leaderboard.php?sortCol=' + sp.get('sortCol') + '&sortDir=' + dir;
     selected.appendChild(dirButton);
+  </script>
+  <script src="js/leaderboard.js">
   </script>
 </body>

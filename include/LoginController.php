@@ -7,12 +7,15 @@ class LoginController extends User {
   private $passwordMinLength = 5;
   private $passwordMaxLength = 40;
 
-  public function __construct($username, $password) {
+  public function setUsername($username) {
     $this->username = $username;
+  }
+
+  public function setPassword($password) {
     $this->password = $password;
   }
 
-  private function error($msg) {
+  public function error($msg) {
     header("location: login.php?error=" . htmlspecialchars($msg));
     exit();
   }
