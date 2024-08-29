@@ -3,6 +3,8 @@
 class Scribble extends DatabaseHandler {
   protected $username;
   protected $userID;
+  protected $likes;
+  protected $dislikes;
   protected $title;
   protected $data_url;
   protected $id;
@@ -89,8 +91,13 @@ class Scribble extends DatabaseHandler {
   }
 
   protected function readScribble($id) {
-    $sql = "SELECT users.username, scribbles.id, scribbles.title, scribbles.data_url 
-     FROM scribbles INNER JOIN users ON users.id = scribbles.user  WHERE scribbles.id = ?";
+    $sql = <<<EOF
+    SELECT users.username, scribbles.id, scribbles.likes, scribbles.dislikes, 
+           scribbles.title, scribbles.data_url
+    FROM scribbles
+    INNER JOIN users ON users.id = scribbles.user  WHERE scribbles.id = ?
+EOF;
+
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
 
@@ -107,6 +114,8 @@ class Scribble extends DatabaseHandler {
     $this->username = $row['username'];
     $this->title    = htmlspecialchars_decode($row['title']);
     $this->data_url = htmlspecialchars_decode($row['data_url']);
+    $this->likes    = $row['likes'];
+    $this->dislikes = $row['dislikes'];
 
     $statement = null;
     return "";
@@ -135,7 +144,9 @@ class Scribble extends DatabaseHandler {
       'id'       => $this->id,
       'username' => $this->username,
       'title'    => $this->title,
-      'data_url' => $this->data_url
+      'data_url' => $this->data_url,
+      'likes'    => $this->likes,
+      'dislikes' => $this->dislikes
     );
   }
 
@@ -214,7 +225,7 @@ class Scribble extends DatabaseHandler {
   // returns an array of scribble ids and titles
   protected function getScribbleListByUsername($username) {
     $sql = "SELECT users.username, scribbles.id, scribbles.title, scribbles.data_url 
-     FROM scribbles INNER JOIN users ON users.id = scribbles.user WHERE user.username = ?";
+     FROM scribbles INNER JOIN users ON users.id = scribbles.user WHERE users.username = ?";
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
 

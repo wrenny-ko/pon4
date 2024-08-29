@@ -9,8 +9,10 @@
 
   session_start();
   $username = "anonymous";
-  if (isset($_SESSION['username'])) {
-    $username = $_SESSION['username'];
+  if (isset($_GET["username"])) {
+    $username = $_GET["username"];
+  } else if (isset($_SESSION["username"])) {
+    $username = $_SESSION["username"];
   }
 
   $scrbCtr = new ScribbleController();

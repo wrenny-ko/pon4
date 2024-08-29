@@ -13,7 +13,7 @@ async function populateScribble() {
 
   let sa = document.getElementsByClassName('scribble-author')[0];
   sa.innerHTML = scribble.username;
-  sa.href = "user.php?name=" + scribble.username;
+  sa.href = "user.php?username=" + scribble.username;
 
   let st = document.getElementsByClassName('scribble-title')[0];
 

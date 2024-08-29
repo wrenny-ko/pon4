@@ -124,6 +124,11 @@ function scribble() {
     t.style.zIndex = -1;
   }
 
+  function clearTitleInput() {
+    const t = document.getElementsByClassName("input-title")[0];
+    t.value = '';
+  }
+
   function disablePostButton() {
     const tb = document.getElementsByClassName("title-button")[0];
     tb.setAttribute("disabled", "true");
@@ -136,6 +141,7 @@ function scribble() {
 
   function close() {
     enable();
+    clearTitleInput();
     hideTitleModal();
     if (isBlank()) {
       document.querySelector(".submit-button").setAttribute("disabled", "");

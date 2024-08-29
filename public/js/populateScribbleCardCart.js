@@ -1,10 +1,13 @@
 async function populateScribbleCards() {
   const sp = new URLSearchParams(window.location.search);
   const search_param = sp.get("search");
+  const username_param = sp.get("username");
 
-  let url = "http://localhost:80/getScribble.php";
+  let url = "getScribble.php";
   if (search_param) {
-    url = url + "?search=" + search_param;
+    url += "?search=" + search_param;
+  } else if (username_param) {
+    url += "?search=by%3A" + username_param;
   }
 
   const response = await fetch(url);

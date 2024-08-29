@@ -32,6 +32,7 @@
   position: absolute;
   z-index: 1;
   top: 50px;
+  left: 5px;
 }
 
 .nav-entry:hover + .tooltip-text {
@@ -110,6 +111,8 @@
 
 .bg {
   display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: calc(100vh - 50px);
   background-color: #faf;

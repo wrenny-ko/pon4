@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <?php session_start(); ?>
 <?php require_once("../include/common/header.php"); ?>
-  <link rel="stylesheet" href="css/search.css" type="text/css">
+  <link rel="stylesheet" href="css/scribble-card-cart.css" type="text/css">
 </head>
 
 <body>
@@ -12,5 +12,5 @@
     </div>
   </div>
   <script src="js/fetchAvatar.js"></script>
-  <script src="js/index.js"></script>
+  <script src="js/populateScribbleCardCart.js"></script>
 </body>

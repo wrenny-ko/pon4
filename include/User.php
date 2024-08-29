@@ -1,4 +1,5 @@
 <?php
+require_once("DatabaseHandler.php");
 
 class User extends DatabaseHandler {
   protected function createUser($username, $email, $password) {

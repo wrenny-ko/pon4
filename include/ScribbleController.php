@@ -100,10 +100,21 @@ class ScribbleController extends Scribble {
     } else if(isset($_GET["search"])) {
       // search titles by a query string
 
-      //TODO parse "user:<username>" for separate search
-      $error = $this->getScribbleSearchTitle($_GET["search"]);
-      if (!empty($error)) {
-        $this->error("Error searching scribbles. " . $error);
+      //"user:<username>" for separate search
+      $query = htmlspecialchars_decode($_GET["search"]);
+      $matches = array([]);
+      $result = preg_match('/(by):(?P<username>[[:alnum:]]+)/i', $query, $matches);
+      if ($result === 1) {
+        $error = $this->getScribbleListByUsername($matches['username']);
+        if (!empty($error)) {
+          $this->error("Error searching scribbles. " . $error);
+        }
+      } else {
+        // default to search titles
+        $error = $this->getScribbleSearchTitle($_GET["search"]);
+        if (!empty($error)) {
+          $this->error("Error searching scribbles. " . $error);
+        }
       }
 
       echo json_encode( array("scribbles" => $this->scribbleList) );
