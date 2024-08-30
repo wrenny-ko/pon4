@@ -1,15 +1,23 @@
 <?php
 require_once "DatabaseHandler.php";
 
+enum AuthLevel: string {
+  case Admin = "admin"; // access to mod powers, tech views, and additional ability to assign roles
+  case Mod   = "mod";   // can edit certain things, delete scribbles
+  case Tech  = "tech";  // for technical support roles. access to logs but not application perms
+  case Beta  = "beta";  // for beta testers. allows any user to view a new version
+}
+
 class Perms extends DatabaseHandler {
-  private $username;
-  private $admin = false; // access to mod powers, tech views, and additional ability to assign roles
-  private $mod   = false; // can edit certain things, delete scribbles
-  private $tech  = false; // for technical support roles. access to logs but not application perms
-  private $beta  = false; // for beta testers. allows any user to view a new version
+  private string $username;
+  private array $roles;
 
   public function __construct($username) {
     $this->username = $username;
+    $this->roles["admin"] = false;
+    $this->roles["mod"]   = false;
+    $this->roles["tech"]  = false;
+    $this->roles["beta"]  = false;
     $this->readPerms();
   }
 
@@ -24,10 +32,10 @@ class Perms extends DatabaseHandler {
 
     if ($statement->rowCount() !== 0) {
       $row = $statement->fetch();
-      $this->admin = $row["admin"];
-      $this->mod   = $row["mod"];
-      $this->tech  = $row["tech"];
-      $this->beta  = $row["beta"];
+      $this->roles["admin"] = $row["admin"];
+      $this->roles["mod"]   = $row["mod"];
+      $this->roles["tech"]  = $row["tech"];
+      $this->roles["beta"]  = $row["beta"];
     }
 
     $statement = null;
@@ -35,22 +43,27 @@ class Perms extends DatabaseHandler {
   }
 
   public function hasAdmin() {
-    return $this->admin;
+    return $this->roles["admin"];
   }
 
   public function hasMod() {
-    return $this->mod;
+    return $this->roles["mod"];
   }
 
   public function hasTech() {
-    return $this->tech;
+    return $this->roles["tech"];
   }
 
   public function hasBeta() {
-    return $this->beta;
+    return $this->roles["beta"];
   }
-/*
-  protected function writePerms() {
+
+  public function hasLevel(AuthLevel $level) {
+    return $this->roles[$level->value];
+  }
+
+  // write one auth level
+  protected function writeLevel($username, AuthLevel $level, $has) {
     // first test for existence of a perms entry
     $sql = "SELECT * FROM perms INNER JOIN users ON users.username = ? AND perms.user = users.id";
     $pdo = $this->connect();
@@ -61,13 +74,15 @@ class Perms extends DatabaseHandler {
     }
 
     $sql = "";
-    $values = array([]);
+    $values = array();
     if ($statement->rowCount() === 0) {
-      $sql = "INSERT INTO perms (user, admin, mod, tech, beta) VALUES (users.id, ?, ?, ?, ?) FROM users WHERE ";
-
-      $values = array($this->admin, )
+      // no perms entry exists yet. create new perms row for the user
+      $sql = "INSERT INTO perms (user, ?) SELECT users.id, ? WHERE users.username = ?";
+      $values = array($level->value, $has, $username);
     } else {
-      $sql = "UPDATE perms SET admin = ?, mod = ?, tech = ?, beta = ? JOIN users WHERE users.username = ? AND perms.user = users.id"
+      // perms entry exists. update it
+      $sql = "UPDATE perms SET ? = ? JOIN users WHERE users.username = ? AND perms.user = users.id";
+      $values = array($level->value, $has, $username);
     }
 
     $statement = $pdo->prepare($sql);
@@ -78,5 +93,16 @@ class Perms extends DatabaseHandler {
     $statement = null;
     return "";
   }
-*/
+
+  // remove all perms from a user
+  protected function wipeAuths($username) {
+    $sql = "DELETE FROM perms JOIN users WHERE users.username = ? AND perms.user = users.id";
+    $statement = $pdo->prepare($sql);
+    if ( !$statement->execute(array($this->username)) ) {
+      return "Database store failed.";
+    }
+
+    $statement = null;
+    return "";
+  }
 }

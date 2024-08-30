@@ -14,9 +14,8 @@
     $ctrl->error("invalid request method. Expect only PUT");
   }
 
-  // require a scribble id
   if (!isset($_GET["maxRows"])) {
-    $ctrl->error("invalid request. Requires a '?=maxRows' query field.");
+    $ctrl->error("invalid request. Requires a '?maxRows=' query field.");
   }
   $maxRows = $_GET["maxRows"];
 

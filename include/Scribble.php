@@ -283,4 +283,170 @@ EOF;
     $statement = null;
     return "";
   }
+
+  protected function removeLike($id, $username) {
+    // remove like
+    $sql = "DELETE l FROM likes l JOIN users u ON u.username = ? WHERE u.id = l.user AND l.scribble = ?";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($username, $id)) ) {
+      return "Database delete failed.";
+    }
+
+    // update scribble like count if a like was deleted
+    if ($statement->rowCount() > 0) {
+      $sql = "UPDATE scribbles SET likes = likes - 1 WHERE id = ?";
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($id)) ) {
+        return "Database update failed.";
+      }
+    }
+
+    return "";
+  }
+
+  protected function addLike($id, $username) {
+    // create like
+    // example of using a subquery
+    $sql = "INSERT INTO likes (user, scribble) SELECT id, ? FROM users WHERE users.username = ? AND ? IN (SELECT id FROM scribbles WHERE scribbles.id = ?)";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($id, $username, $id, $id)) ) {
+      return "Database insert failed.";
+    }
+
+    // update scribble like count
+    $sql = "UPDATE scribbles SET likes = likes + 1 WHERE id = ?";
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($id)) ) {
+      return "Database update failed.";
+    }
+
+    // remove dislike, if any
+    $sql = "DELETE dl FROM dislikes dl JOIN users u ON u.username = ? WHERE u.id = dl.user AND dl.scribble = ?";
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($username, $id)) ) {
+      return "Database delete failed.";
+    }
+
+    // update scribble dislike count if a dislike was deleted
+    if ($statement->rowCount() > 0) {
+      $sql = "UPDATE scribbles SET dislikes = dislikes - 1 WHERE id = ?";
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($id)) ) {
+        return "Database update failed.";
+      }
+    }
+
+    return "";
+  }
+
+  protected function like($id, $username) {
+    // check if the like already exists
+    //TODO this sql could be refined
+    $sql = "SELECT * FROM likes JOIN users WHERE likes.scribble = ? AND users.username = ? AND likes.user = users.id";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($id, $username)) ) {
+      return "Database lookup failed.";
+    }
+
+    if ($statement->rowCount() === 0) {
+      return $this->addLike($id, $username); // like does not exist yet
+    }
+    return $this->removeLike($id, $username); // like exists
+  }
+
+  protected function removeDislike($id, $username) {
+    // remove dislike
+    $sql = "DELETE dl FROM dislikes dl JOIN users u ON u.username = ? WHERE u.id = dl.user AND dl.scribble = ?";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($username, $id)) ) {
+      return "Database delete failed.";
+    }
+
+    // update scribble dislike count if a dislike was deleted
+    if ($statement->rowCount() > 0) {
+      $sql = "UPDATE scribbles SET dislikes = dislikes - 1 WHERE id = ?";
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($id)) ) {
+        return "Database update failed.";
+      }
+    }
+
+    return "";
+  }
+
+  protected function addDislike($id, $username) {
+    // create dislike
+    // example of using a subquery
+    $sql = "INSERT INTO dislikes (user, scribble) SELECT id, ? FROM users WHERE users.username = ? AND ? IN (SELECT id FROM scribbles WHERE scribbles.id = ?)";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($id, $username, $id, $id)) ) {
+      return "Database insert failed.";
+    }
+
+    // update scribble dislike count
+    $sql = "UPDATE scribbles SET dislikes = dislikes + 1 WHERE id = ?";
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($id)) ) {
+      return "Database update failed.";
+    }
+
+    // remove like, if any
+    $sql = "DELETE l FROM likes l JOIN users u ON u.username = ? WHERE u.id = l.user AND l.scribble = ?";
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($username, $id)) ) {
+      return "Database delete failed.";
+    }
+
+
+    // update scribble like count if a like was deleted
+    if ($statement->rowCount() > 0) {
+      $sql = "UPDATE scribbles SET likes = likes - 1 WHERE id = ?";
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($id)) ) {
+        return "Database update failed.";
+      }
+    }
+
+    return "";
+  }
+
+  protected function dislike($id, $username) {
+    // check if the dislike already exists
+    //TODO this sql could be refined
+    $sql = "SELECT * FROM dislikes JOIN users WHERE dislikes.scribble = ? AND users.username = ? AND dislikes.user = users.id";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($id, $username)) ) {
+      return "Database lookup failed.";
+    }
+
+    if ($statement->rowCount() === 0) {
+      return $this->addDislike($id, $username);
+    }
+    return $this->removeDislike($id, $username);
+  }
+
+  protected function comment($id, $username, $msg) {
+    //TODO
+    return "Not implemented";
+  }
 }

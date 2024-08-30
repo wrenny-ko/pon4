@@ -78,3 +78,26 @@
   background-color: #f66151;
   cursor: pointer;
 }
+
+.like-bar {
+  font-size: 1rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  width: 90%;
+  font-weight: bold;
+}
+
+.likes {
+  color: #26a269;
+}
+
+.dislikes {
+  color: #e80d0d;
+}
+
+.ratio {
+  color: #e66100;
+}

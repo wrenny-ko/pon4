@@ -27,6 +27,7 @@
 ?>
 <?php require_once("../include/common/header.php"); ?>
   <link rel="stylesheet" href="css/scribble.css" type="text/css">
+  <script src="js/jquery-3.7.1.min.js"></script>
 </head>
 <body>
   <?php require_once("../include/common/navbar.php"); ?>
@@ -41,8 +42,15 @@
           </span>
         </div>
         <div class="scribble-title"></div>
+        <div class="like-bar">
+          <div class="likes">Likes: </div>
+          <div class="ratio">Ratio: </div>
+          <div class="dislikes">Dislikes: </div>
+        </div>
       </div>
       <?php if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) { ?>
+        <input type="button" class="button like-button" value="Like" onclick="like(<?= "'" . $_SESSION['username'] . "'";?>);"/>
+        <input type="button" class="button dislike-button" value="Dislike" onclick="dislike(<?= "'" . $_SESSION['username'] . "'";?>);"/>
         <input type="button" class="button set-avatar-button" value="Set avatar" onclick="setAvatar('<?= $_SESSION['username'];?>');"/>
         <?php if ($perms->hasMod() || $perms->hasAdmin()) { ?>
           <input type="button" class="button delete-button" value="Delete" onclick="deleteScribble('<?= $id;?>');"/>

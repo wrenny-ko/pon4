@@ -21,10 +21,11 @@ require_once("../include/Leaderboard.php");
 
 $perms = new Perms($username);
 
-$sortCol = LeaderboardColumn::TotalScribbles;
+$sortCol;
 try {
   $sortCol = LeaderboardColumn::from($_GET["sortCol"]);
 } catch (Exception $e) {
+  $sortCol = LeaderboardColumn::TotalScribbles;
 }
 
 $sortDir = LeaderboardSortDir::Down;

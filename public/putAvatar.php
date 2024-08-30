@@ -22,7 +22,7 @@
   }
 
   if (!isset($_GET["id"])) {
-    echo json_encode(array("error" => "request missing a required field"));
+    echo json_encode(array("error" => "request missing required 'id' field"));
     exit();
   }
 

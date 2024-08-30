@@ -1,6 +1,18 @@
 <?php
+require_once "../include/Perms.php";
+
+enum ScribbleAction: string {
+  case Like = "like";
+  case Dislike = "dislike";
+  case Delete = "delete";
+  case Comment = "comment";
+}
 
 class ScribbleController extends Scribble {
+  const AuthMap = array(
+    ScribbleAction::Delete->value => array(AuthLevel::Mod, AuthLevel::Admin)
+  );
+
   public function error($msg) {
     $msg = "Scribble error. " . $msg;
     echo json_encode(array("error" => $msg));
@@ -130,5 +142,23 @@ class ScribbleController extends Scribble {
       echo json_encode( array("scribbles" => $this->scribbleList) );
 
     }
+  }
+
+  public function handleAction($action, $id, $username, $data = null) {
+    switch ($action) {
+      case ScribbleAction::Like:
+        return $this->like($id, $username);
+        break;
+      case ScribbleAction::Dislike:
+        return $this->dislike($id, $username);
+        break;
+      case ScribbleAction::Delete:
+        return $this->delete($id);
+        break;
+      case ScribbleAction::Comment:
+        return $this->comment($id, $data);
+        break;
+    }
+    return "Action not found";
   }
 }
