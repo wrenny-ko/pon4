@@ -11,13 +11,9 @@ async function populateScribbleCards() {
   }
 
   const response = await fetch(url);
-  if (response.status !== 200) {
-    console.log(response.text);
-  }
-
   const res = await response.json();
-  if (res.hasOwnProperty("error")) {
-    console.log(res["error"]);
+  if (response.status !== 200 || res.hasOwnProperty("error")) {
+    console.log(res);
     return;
   }
 

@@ -31,11 +31,11 @@
   require_once("../include/Perms.php");
   $perms = new Perms($username);
 
-  if (!$perms->hasMod() && !$perms->hasAdmin()) {
+  if (!$perms->hasModerator() && !$perms->hasAdmin()) {
     $ctrl->error("insufficient permission");
   }
 
-  if ($id === 1) {
+  if ($id === "1") {
     $ctrl->error("can't delete the default scribble");
   }
 

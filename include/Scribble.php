@@ -127,8 +127,23 @@ EOF;
   }
 
   protected function deleteScribble($id) {
-    $sql = "DELETE FROM scribbles WHERE id = ?";
+    $sql = "DELETE FROM likes WHERE likes.scribble = ?";
     $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($id)) ) {
+      return "Database delete failed.";
+    }
+
+    $sql = "DELETE FROM dislikes WHERE dislikes.scribble = ?";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($id)) ) {
+      return "Database delete failed.";
+    }
+
+    $sql = "DELETE FROM scribbles WHERE id = ?";
     $statement = $pdo->prepare($sql);
 
     if ( !$statement->execute(array($id)) ) {

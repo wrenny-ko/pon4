@@ -59,7 +59,7 @@ async function setAvatar(username) {
 }
 
 async function deleteScribble(id) {
-  const response = await fetch("http://localhost:80/deleteScribble.php?id=" + id, {
+  const response = await fetch("http://localhost:80/scribbleAPI.php?action=delete&id=" + id, {
     method: 'DELETE',
   });
 
@@ -74,7 +74,7 @@ async function deleteScribble(id) {
 
 async function like(username) {
   const sc = $('.scribble-container')[0];
-  const response = await fetch("http://localhost:80/putScribble.php?action=like&id=" + sc.id, {
+  const response = await fetch("http://localhost:80/scribbleAPI.php?action=like&id=" + sc.id, {
     method: 'PUT',
   });
 
@@ -89,7 +89,7 @@ async function like(username) {
 
 async function dislike(username) {
   const sc = $('.scribble-container')[0];
-  const response = await fetch("http://localhost:80/putScribble.php?action=dislike&id=" + sc.id, {
+  const response = await fetch("http://localhost:80/scribbleAPI.php?action=dislike&id=" + sc.id, {
     method: 'PUT',
   });
 

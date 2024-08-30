@@ -1,13 +1,20 @@
 <?php
-  header("Access-Control-Allow-Methods: PUT");
+  header("Access-Control-Allow-Methods: PUT, DELETE");
 
   require_once "../include/common/enableLogging.php"; //TODO remove; for development debugging only
 
   require_once "../include/Rest.php";
   require_once "../include/Perms.php";
 
+  $method;
+  try {
+    $method = RequestMethod::from($_SERVER["REQUEST_METHOD"]);
+  } catch (Exception $e) {
+    $method = RequestMethod::PUT;
+  }
+
   $loginRequired = true;
-  $rest = new Rest(RequestMethod::PUT, $loginRequired);
+  $rest = new Rest($method, $loginRequired);
   $rest->setupLogging("pon4-api.log", "scribble");
 
   // this either passes through or calls exit() with error reporting

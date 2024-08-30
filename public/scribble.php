@@ -48,11 +48,14 @@
           <div class="dislikes">Dislikes: </div>
         </div>
       </div>
+      <div class="controls">
       <?php if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) { ?>
-        <input type="button" class="button like-button" value="Like" onclick="like(<?= "'" . $_SESSION['username'] . "'";?>);"/>
-        <input type="button" class="button dislike-button" value="Dislike" onclick="dislike(<?= "'" . $_SESSION['username'] . "'";?>);"/>
+        <div class="like-controls">
+          <input type="button" class="button like-button" value="Like" onclick="like(<?= "'" . $_SESSION['username'] . "'";?>);"/>
+          <input type="button" class="button dislike-button" value="Dislike" onclick="dislike(<?= "'" . $_SESSION['username'] . "'";?>);"/>
+        </div>
         <input type="button" class="button set-avatar-button" value="Set avatar" onclick="setAvatar('<?= $_SESSION['username'];?>');"/>
-        <?php if ($perms->hasMod() || $perms->hasAdmin()) { ?>
+        <?php if ($perms->hasModerator() || $perms->hasAdmin()) { ?>
           <input type="button" class="button delete-button" value="Delete" onclick="deleteScribble('<?= $id;?>');"/>
         <?php } ?>
       <?php } ?>

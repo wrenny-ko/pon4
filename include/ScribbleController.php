@@ -10,7 +10,7 @@ enum ScribbleAction: string {
 
 class ScribbleController extends Scribble {
   const AuthMap = array(
-    ScribbleAction::Delete->value => array(AuthLevel::Mod, AuthLevel::Admin)
+    ScribbleAction::Delete->value => array(AuthLevel::Moderator, AuthLevel::Admin)
   );
 
   public function error($msg) {
@@ -153,7 +153,10 @@ class ScribbleController extends Scribble {
         return $this->dislike($id, $username);
         break;
       case ScribbleAction::Delete:
-        return $this->delete($id);
+        if ($id === "1") {
+          return "wont delete the default avatar scribble";
+        }
+        return $this->deleteScribble($id);
         break;
       case ScribbleAction::Comment:
         return $this->comment($id, $data);

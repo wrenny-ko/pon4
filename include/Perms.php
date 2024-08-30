@@ -3,7 +3,7 @@ require_once "DatabaseHandler.php";
 
 enum AuthLevel: string {
   case Admin = "admin"; // access to mod powers, tech views, and additional ability to assign roles
-  case Mod   = "mod";   // can edit certain things, delete scribbles
+  case Moderator   = "moderator";   // can edit certain things, delete scribbles
   case Tech  = "tech";  // for technical support roles. access to logs but not application perms
   case Beta  = "beta";  // for beta testers. allows any user to view a new version
 }
@@ -15,7 +15,7 @@ class Perms extends DatabaseHandler {
   public function __construct($username) {
     $this->username = $username;
     $this->roles["admin"] = false;
-    $this->roles["mod"]   = false;
+    $this->roles["moderator"]   = false;
     $this->roles["tech"]  = false;
     $this->roles["beta"]  = false;
     $this->readPerms();
@@ -33,7 +33,7 @@ class Perms extends DatabaseHandler {
     if ($statement->rowCount() !== 0) {
       $row = $statement->fetch();
       $this->roles["admin"] = $row["admin"];
-      $this->roles["mod"]   = $row["mod"];
+      $this->roles["moderator"]   = $row["moderator"];
       $this->roles["tech"]  = $row["tech"];
       $this->roles["beta"]  = $row["beta"];
     }
@@ -46,8 +46,8 @@ class Perms extends DatabaseHandler {
     return $this->roles["admin"];
   }
 
-  public function hasMod() {
-    return $this->roles["mod"];
+  public function hasModerator() {
+    return $this->roles["moderator"];
   }
 
   public function hasTech() {
@@ -77,7 +77,7 @@ class Perms extends DatabaseHandler {
     $values = array();
     if ($statement->rowCount() === 0) {
       // no perms entry exists yet. create new perms row for the user
-      $sql = "INSERT INTO perms (user, ?) SELECT users.id, ? WHERE users.username = ?";
+      $sql = "INSERT INTO perms (user, ?) SELECT id, ? FROM users WHERE users.username = ?";
       $values = array($level->value, $has, $username);
     } else {
       // perms entry exists. update it

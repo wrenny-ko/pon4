@@ -49,7 +49,7 @@ $leaderboard = new Leaderboard($sortCol, $sortDir);
       <div class="leaderboard-title">
         Leaderboard
       </div>
-      <?php if ($perms->hasAdmin() || $perms->hasMod()) { ?>
+      <?php if ($perms->hasAdmin() || $perms->hasModerator()) { ?>
         <div class="leaderboard-tools">
           <?php if ($perms->hasAdmin()) {
             if (isset($_GET["showRowNumField"])) { ?>

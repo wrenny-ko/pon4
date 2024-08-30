@@ -111,7 +111,7 @@ class Rest {
       // allow access if user has perms for at least one of the listed levels
       $authorized = false;
       foreach ($this->auths as $level) {
-        if ($perms->hasLevel($level)) {
+        if ($this->perms->hasLevel($level)) {
           $authorized = true;
           break 1;
         }
