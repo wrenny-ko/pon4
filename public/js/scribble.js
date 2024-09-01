@@ -45,7 +45,7 @@ async function populateScribble() {
 async function setAvatar(username) {
   let sc = document.getElementsByClassName('scribble-container')[0];
 
-  const response = await fetch("http://localhost:80/putAvatar.php?id=" + sc.id, {
+  const response = await fetch("putAvatar.php?id=" + sc.id, {
     method: 'PUT',
   });
 

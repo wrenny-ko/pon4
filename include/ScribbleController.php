@@ -9,6 +9,7 @@ enum ScribbleAction: string {
   case GetAvatar = "get_avatar";
   case Upload = "upload";
   case Search = "search";
+  case UserGif = "user_gif";
 }
 
 class ScribbleController extends Scribble {
@@ -52,6 +53,11 @@ class ScribbleController extends Scribble {
       "method" => RequestMethod::GET,
       "login_required" => false,
       "auth_levels" => array()
+    ),
+    ScribbleAction::UserGif->value => array(
+      "method" => RequestMethod::GET,
+      "login_required" => false,
+      "auth_levels" => array(AuthLevel::Beta)
     )
   );
 
@@ -102,7 +108,7 @@ class ScribbleController extends Scribble {
     $this->rest->success($this->action->value);
   }
 
-  public function handleAction() {
+  private function handleAction() {
     switch ($this->action) {
       case ScribbleAction::Like:
         $id = $this->rest->getRequiredQueryField("id");
@@ -140,11 +146,15 @@ class ScribbleController extends Scribble {
       case ScribbleAction::Search:
         $search = $this->rest->getQueryField("search");
         return $this->search($search);
+        break;
+      case ScribbleAction::UserGif:
+        return $this->userGif();
+        break;
     }
     return "action not found";
   }
 
-  public function upload($username) {
+  private function upload($username) {
     // Checks
     /////////////////////////////////////////////////////////////////////
     // check for behavior when a form was too large to accept
@@ -194,7 +204,7 @@ class ScribbleController extends Scribble {
     return "";
   }
 
-  public function getAvatar($username) {
+  private function getAvatar($username) {
     $error = $this->readScribbleAvatar($username);
     if (!empty($error)) {
       return "Can't read scribble avatar. " . $error;
@@ -204,7 +214,7 @@ class ScribbleController extends Scribble {
     return "";
   }
 
-  public function get($id) {
+  private function get($id) {
     $msg = $this->readScribble($id);
     if (!empty($msg)) {
       return "Error reading scribble. " . $msg;
@@ -214,7 +224,7 @@ class ScribbleController extends Scribble {
   }
 
   // search titles by a query string
-  public function search($search) {
+  private function search($search) {
     if (empty($search)) {
       // search all scribbles
       $error = $this->getScribbleList();
@@ -244,6 +254,14 @@ class ScribbleController extends Scribble {
 
       $this->rest->setDataField("scribbles", $this->scribbleList);
     }
+    return "";
+  }
+
+  // beta test of making a slideshow out of all a user's scribbles
+  private function userGif() {
+    return "not implemented";
+
+    $this->rest->setDataField("url", $url);
     return "";
   }
 }

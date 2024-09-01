@@ -9,6 +9,9 @@ RUN <<EOF
   mkdir /var/log/pon4
   chown www-data:www-data /var/log/pon4
 
+  mkdir /var/www/html/gifs
+  chown www-data:www-data /var/www/html/gifs
+
   # increase the max filesize for POST requests to 16MB
   sed -i 's/upload_max_filesize.*/upload_max_filesize = 16M/' /etc/php/8.3/apache2/php.ini
   sed -i 's/post_max_size.*/post_max_size = 16M/' /etc/php/8.3/apache2/php.ini
