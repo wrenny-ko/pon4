@@ -1,11 +1,10 @@
 <?php
-require_once "DatabaseHandler.php";
 
 enum AuthLevel: string {
-  case Admin = "admin"; // access to mod powers, tech views, and additional ability to assign roles
-  case Moderator   = "moderator";   // can edit certain things, delete scribbles
-  case Tech  = "tech";  // for technical support roles. access to logs but not application perms
-  case Beta  = "beta";  // for beta testers. allows any user to view a new version
+  case Admin     = "admin"; // access to mod powers, tech views, and additional ability to assign roles
+  case Moderator = "moderator";   // can edit certain things, delete scribbles
+  case Tech      = "tech";  // for technical support roles. access to logs but not application perms
+  case Beta      = "beta";  // for beta testers. allows any user to view a new version
 }
 
 class Perms extends DatabaseHandler {

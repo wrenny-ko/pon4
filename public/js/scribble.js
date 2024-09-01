@@ -1,12 +1,14 @@
 async function populateScribble() {
   const sc = $('.scribble-container')[0];
-  const response = await fetch("http://localhost:80/getScribble.php?id=" + sc.id);
+  const response = await fetch("api/scribble.php?action=get&id=" + sc.id);
   if (response.status !== 200) {
     //TODO show error on page
-    console.log(response.text);
+    const res = await response.text();
+    console.log(res);
+    return;
   }
   const res = await response.json();
-  const scribble = res['scribble']
+  const scribble = res['data']['scribble'];
 
   const si = $('.scribble-image')[0];
   si.src = scribble.data_url;
@@ -55,11 +57,11 @@ async function setAvatar(username) {
 
   // trigger refresh
   // TODO only refetch avatar instead
-  location.href = "http://localhost:80/scribble.php?id=" + sc.id;
+  location.href = "scribble.php?id=" + sc.id;
 }
 
 async function deleteScribble(id) {
-  const response = await fetch("http://localhost:80/scribbleAPI.php?action=delete&id=" + id, {
+  const response = await fetch("api/scribble.php?action=delete&id=" + id, {
     method: 'DELETE',
   });
 
@@ -67,14 +69,15 @@ async function deleteScribble(id) {
     //TODO show error on page
     res = await response.json();
     console.log(res);
+    return;
   }
 
-  location.href = "http://localhost:80/index.php";
+  location.href = "index.php";
 }
 
 async function like(username) {
   const sc = $('.scribble-container')[0];
-  const response = await fetch("http://localhost:80/scribbleAPI.php?action=like&id=" + sc.id, {
+  const response = await fetch("api/scribble.php?action=like&id=" + sc.id, {
     method: 'PUT',
   });
 
@@ -89,7 +92,7 @@ async function like(username) {
 
 async function dislike(username) {
   const sc = $('.scribble-container')[0];
-  const response = await fetch("http://localhost:80/scribbleAPI.php?action=dislike&id=" + sc.id, {
+  const response = await fetch("api/scribble.php?action=dislike&id=" + sc.id, {
     method: 'PUT',
   });
 

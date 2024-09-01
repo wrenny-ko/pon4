@@ -28,7 +28,7 @@
   }
 
   require_once("../include/Perms.php");
-  $perms = new Perms($username);
+  $perms = new Perms\Perms($username);
 
   if (!$perms->hasAdmin()) {
     $ctrl->error("insufficient permission, requires admin");

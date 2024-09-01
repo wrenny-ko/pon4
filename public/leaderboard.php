@@ -16,6 +16,7 @@ if (isset($_SESSION['username'])) {
   $username = $_SESSION['username'];
 }
 
+require_once "../include/DatabaseHandler.php";
 require_once("../include/Perms.php");
 require_once("../include/Leaderboard.php");
 
@@ -24,7 +25,7 @@ $perms = new Perms($username);
 $sortCol;
 try {
   $sortCol = LeaderboardColumn::from($_GET["sortCol"]);
-} catch (Exception $e) {
+} catch (\Throwable $e) {
   $sortCol = LeaderboardColumn::TotalScribbles;
 }
 

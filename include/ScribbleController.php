@@ -1,30 +1,150 @@
 <?php
-require_once "../include/Perms.php";
 
 enum ScribbleAction: string {
   case Like = "like";
   case Dislike = "dislike";
   case Delete = "delete";
   case Comment = "comment";
+  case Get = "get";
+  case GetAvatar = "get_avatar";
+  case Upload = "upload";
+  case Search = "search";
 }
 
 class ScribbleController extends Scribble {
-  const AuthMap = array(
-    ScribbleAction::Delete->value => array(AuthLevel::Moderator, AuthLevel::Admin)
+  const RouteMap = array(
+    ScribbleAction::Like->value    => array(
+      "method" => RequestMethod::PUT,
+      "login_required" => true,
+      "auth_levels" => array()
+    ),
+    ScribbleAction::Dislike->value => array(
+      "method" => RequestMethod::PUT,
+      "login_required" => true,
+      "auth_levels" => array()
+    ),
+    ScribbleAction::Delete->value  => array(
+      "method" => RequestMethod::DELETE,
+      "login_required" => true,
+      "auth_levels" => array(AuthLevel::Moderator, AuthLevel::Admin)
+    ),
+    ScribbleAction::Comment->value => array(
+      "method" => RequestMethod::POST,
+      "login_required" => false,
+      "auth_levels" => array()
+    ),
+    ScribbleAction::Get->value => array(
+      "method" => RequestMethod::GET,
+      "login_required" => false,
+      "auth_levels" => array()
+    ),
+    ScribbleAction::GetAvatar->value => array(
+      "method" => RequestMethod::GET,
+      "login_required" => false,
+      "auth_levels" => array()
+    ),
+    ScribbleAction::Upload->value => array(
+      "method" => RequestMethod::POST,
+      "login_required" => false,
+      "auth_levels" => array()
+    ),
+    ScribbleAction::Search->value => array(
+      "method" => RequestMethod::GET,
+      "login_required" => false,
+      "auth_levels" => array()
+    )
   );
 
-  public function error($msg) {
-    $msg = "Scribble error. " . $msg;
-    echo json_encode(array("error" => $msg));
-    http_response_code(400);
-    exit();
-  }
+  private $rest;
+  private $action;
 
-  public function handlePost() {
-    if ($_SERVER["REQUEST_METHOD"] !== 'POST') {
-      $this->error("Only accept POST on this route");
+  public function __construct() {
+    // set up first for logging/error response if needed
+    $this->rest = new Rest();
+    $this->rest->setupLogging("api.log", "scribble");
+
+    if (!isset($_SERVER["REQUEST_METHOD"])) {
+      $this->rest->error("request method not set");
     }
 
+    $method;
+    try {
+      $method = RequestMethod::from($_SERVER["REQUEST_METHOD"]);
+    } catch (\Throwable $e) {
+      $this->rest->error("request method not supported");
+    }
+    $this->rest->setMethod($method);
+
+    if (!isset($_GET["action"])) {
+      $this->rest->error("requires an 'action' query string");
+    }
+
+    $action;
+    try {
+      $action = ScribbleAction::from($_GET["action"]);
+    } catch (\Throwable $e) {
+      $this->rest->error("action not supported");
+    }
+    $this->action = $action;
+
+    $this->rest->setLoginRequired( self::RouteMap[$action->value]["login_required"] );
+    $this->rest->setAuths( self::RouteMap[$action->value]["auth_levels"] );
+
+    $this->rest->compareMethod(self::RouteMap[$action->value]["method"] );
+    $this->rest->auth();
+  }
+
+  public function handle() {
+    $msg = $this->handleAction();
+    if (!empty($msg)) {
+      $this->rest->error($msg);
+    }
+    $this->rest->success($this->action->value);
+  }
+
+  public function handleAction() {
+    switch ($this->action) {
+      case ScribbleAction::Like:
+        $id = $this->rest->getRequiredQueryField("id");
+        $username = $this->rest->getUsername();
+        return $this->like($id, $username);
+        break;
+      case ScribbleAction::Dislike:
+        $id = $this->rest->getRequiredQueryField("id");
+        $username = $this->rest->getUsername();
+        return $this->dislike($id, $username);
+        break;
+      case ScribbleAction::Delete:
+        $id = $this->rest->getRequiredQueryField("id");
+        return $this->deleteScribbleUpdateAvatars($id);
+        break;
+      case ScribbleAction::Comment:
+        return "not implemented";
+        break;
+      case ScribbleAction::Get:
+        $id = $this->rest->getRequiredQueryField("id");
+        return $this->get($id);
+        break;
+      case ScribbleAction::GetAvatar:
+        $username = $this->rest->getQueryField("username");
+        if(empty($username)) {
+          $username = $this->rest->getUsername();
+        }
+        return $this->getAvatar($username);
+        break;
+      case ScribbleAction::Upload:
+        $this->rest->setSuccessCode(201);
+        $username = $this->rest->getUsername();
+        return $this->upload($username);
+        break;
+      case ScribbleAction::Search:
+        $search = $this->rest->getQueryField("search");
+        return $this->search($search);
+    }
+    return "action not found";
+  }
+
+  public function upload($username) {
     // Checks
     /////////////////////////////////////////////////////////////////////
     // check for behavior when a form was too large to accept
@@ -35,133 +155,95 @@ class ScribbleController extends Scribble {
       $pms = return_bytes(ini_get('post_max_size'));
       $less = ($umf > $pms) ? $pms : $umf;
       if ($length >= $less) {
-        $this->error("Exceeded upload byte size limit of " . format_bytes($less));
+        return "Exceeded upload byte size limit of " . format_bytes($less);
       }
     }
 
     if (empty($_POST['scribble'])) {
-      $this->error("Required json not present");
-    }
-
-    session_start();
-
-    $username = "anonymous";
-    if (isset($_SESSION['username'])) {
-      $username = $_SESSION['username'];
+      return "Required json not present";
     }
 
     $json = $_POST['scribble'];
     if(!json_validate($json)) {
-      $this->error("Invalid json");
+      return "Invalid json";
     }
 
     $scribble = json_decode($json);
     if (!isset($scribble->data_url) || !isset($scribble->title)) {
-      $this->error("Missing json fields");
+      return "Missing json fields";
     }
 
     if (!is_string($scribble->data_url)) {
-      $this->error("Improperly formatted json fields.");
+      return "Improperly formatted json fields.";
     }
 
     if (strlen($scribble->title) >= 30) {
-      $this->error("Titles have max character limits of 30.");
+      return "Titles have max character limits of 30.";
     }
 
     $error = $this->createScribble($username, $scribble->title, $scribble->data_url);
     if (!empty($error)) {
-      $this->error("Creation failed. " . $error);
+      return "Creation failed. " . $error;
     }
 
     if (!isset($this->id)) {
-      $this->error("Can't find scribble id.");
+      return "Can't find scribble id.";
     }
 
-    http_response_code(201);
-    echo json_encode(array("success" => $this->id));
+    $this->rest->setDataField("id", $this->id);
+    return "";
   }
 
-  public function handleAvatarGet($username) {
-    if ($_SERVER["REQUEST_METHOD"] !== 'GET') {
-      $this->error("Only accept GET on this route.");
-    }
-
+  public function getAvatar($username) {
     $error = $this->readScribbleAvatar($username);
     if (!empty($error)) {
-      $this->error("Can't read scribble avatar. " . $error);
+      return "Can't read scribble avatar. " . $error;
     }
 
-    echo json_encode(array("success" => $this->data_url));
+    $this->rest->setDataField("scribble", $this->getScribble());
+    return "";
   }
 
-  public function handleScribbleGet() {
-    if ($_SERVER["REQUEST_METHOD"] !== 'GET') {
-      $this->error("Only accept GET on this route.");
+  public function get($id) {
+    $msg = $this->readScribble($id);
+    if (!empty($msg)) {
+      return "Error reading scribble. " . $msg;
     }
 
-    if (isset($_GET["id"])) {
-      // search a single scribble id
+    $this->rest->setDataField("scribble", $this->getScribble());
+  }
 
-      $error = $this->readScribble($_GET["id"]);
+  // search titles by a query string
+  public function search($search) {
+    if (empty($search)) {
+      // search all scribbles
+      $error = $this->getScribbleList();
       if (!empty($error)) {
-        $this->error("Error reading scribble. " . $error);
+        return "Error searching scribbles. " . $error;
       }
 
-      echo json_encode( array("scribble" => $this->getScribble()) );
-
-    } else if(isset($_GET["search"])) {
-      // search titles by a query string
-
-      //"user:<username>" for separate search
+      $this->rest->setDataField("scribbles", $this->scribbleList);
+    } else {
+      //check for "user:<username>" for separate search
       $query = htmlspecialchars_decode($_GET["search"]);
       $matches = array([]);
       $result = preg_match('/(by):(?P<username>[[:alnum:]]+)/i', $query, $matches);
+
       if ($result === 1) {
         $error = $this->getScribbleListByUsername($matches['username']);
         if (!empty($error)) {
-          $this->error("Error searching scribbles. " . $error);
+          return "Error searching scribbles. " . $error;
         }
       } else {
         // default to search titles
         $error = $this->getScribbleSearchTitle($_GET["search"]);
         if (!empty($error)) {
-          $this->error("Error searching scribbles. " . $error);
+          return "Error searching scribbles. " . $error;
         }
       }
 
-      echo json_encode( array("scribbles" => $this->scribbleList) );
-
-    } else {
-      // search for all scribbles
-
-      $error = $this->getScribbleList();
-      if (!empty($error)) {
-        $this->error("Error searching scribbles. " . $error);
-      }
-
-      echo json_encode( array("scribbles" => $this->scribbleList) );
-
+      $this->rest->setDataField("scribbles", $this->scribbleList);
     }
-  }
-
-  public function handleAction($action, $id, $username, $data = null) {
-    switch ($action) {
-      case ScribbleAction::Like:
-        return $this->like($id, $username);
-        break;
-      case ScribbleAction::Dislike:
-        return $this->dislike($id, $username);
-        break;
-      case ScribbleAction::Delete:
-        if ($id === "1") {
-          return "wont delete the default avatar scribble";
-        }
-        return $this->deleteScribble($id);
-        break;
-      case ScribbleAction::Comment:
-        return $this->comment($id, $data);
-        break;
-    }
-    return "Action not found";
+    return "";
   }
 }

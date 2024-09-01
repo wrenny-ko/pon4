@@ -1,5 +1,7 @@
 <?php
 
+const LOG_DIR = "/var/log/pon4/";
+
 enum RequestMethod: string {
   case GET    = "GET";
   case PUT    = "PUT";
@@ -15,7 +17,7 @@ class RestLogEntry {
 
   public function __construct($endpointName) {
     $this->endpointName = $endpointName;
-    $this->username = "anonymous";
+    $this->username = "unknown";
     $this->method = "unknown";
     $this->success = "unknown";
   }
@@ -32,6 +34,7 @@ class RestLogEntry {
     $this->success = $s;
   }
 
+  // date | endpoint | method | username | success | message
   public function getEntry($msg) {
    return date("Y-m-d H:i:s") . " | " . $this->endpointName . " | " . $this->method . " | " . $this->username . " | " . $this->success . " | " . $msg . "\n";
   }
@@ -44,50 +47,123 @@ class Rest {
   private string $logFilename;
   private RestLogEntry $logEntry;
   private Perms $perms;
+  private array $data;
+  private int $successCode;
 
-  public function __construct($method = RequestMethod::GET, $loginRequired = false, $auths = array()) {
+  // Construct this after calling session_start()
+  public function __construct() {
+    $this->method = RequestMethod::GET;
+    $this->loginRequired = false;
+    $this->auths = array();
+    $this->data = array();
+    $this->successCode = 200;
+  }
+
+  public function setMethod($method) {
     $this->method = $method;
+  }
+
+  public function setLoginRequired($loginRequired) {
     $this->loginRequired = $loginRequired;
-    $this->auths = $auths;
   }
 
   public function setAuths($auths) {
     $this->auths = $auths;
   }
 
+  public function setDataField($field, $val) {
+    $this->data[$field] = $val;
+  }
+
+  public function setSuccessCode($code) {
+    $this->successCode = $code;
+  }
+
+  public function compareMethod($method) {
+    if ($this->method !== $method) {
+      $this->error("method does not match expected (" . $this->method->value . ")");
+    }
+  }
+
+  public function getQueryField($field) {
+    if (!isset($_GET[$field])) {
+      return "";
+    }
+    return $_GET[$field];
+  }
+
+  public function getRequiredQueryField($field) {
+    if (!isset($_GET[$field])) {
+      $this->error("requires a '$field' query field.");
+    }
+    return $_GET[$field];
+  }
+
+  public function checkRequiredQueryFieldPresent($field) {
+    if (!isset($_GET[$field])) {
+      $this->error("requires a '$field' query field.");
+    }
+  }
+
+  public function getUsername() {
+    require_once "common/initSession.php"; // session_start();
+
+    $username = "anonymous";
+    if (isset($_SESSION["username"])) {
+      $username = $_SESSION["username"];
+    }
+
+    return $username;
+  }
+
   public function setupLogging($logFilename, $endpointName) {
     date_default_timezone_set('UTC');
     $this->logEntry = new RestLogEntry($endpointName);
     $this->logEntry->setMethod($this->method->value);
-    $this->logFilename = "/var/log/pon4/" . $logFilename;
+    $this->logFilename = LOG_DIR . $logFilename;
+
+    $username;
+    if (isset($_SESSION['username'])) {
+       $username = $_SESSION['username'];
+    } else {
+      $username = "anon";
+    }
+    $this->logEntry->setUsername($username);
   }
 
-  public function log($msg) {
+  public function getLogFilename() {
+    return $this->logFilename;
+  }
+
+  // only call this once, when sending the response.
+  // calling this earlier apparently causes an http_response_code header to be sent early
+  private function log($msg) {
     file_put_contents($this->logFilename, $this->logEntry->getEntry($msg), FILE_APPEND);
   }
 
   public function error($msg) {
+    http_response_code(400);
+
     $this->logEntry->setSuccess("FAILED");
     $this->log($msg);
+
     echo json_encode(array("error" => $msg));
-    http_response_code(400);
     exit();
   }
 
   public function success($msg) {
+    http_response_code($this->successCode);
+
     $this->logEntry->setSuccess("SUCCESS");
     $this->log($msg);
-    echo json_encode(array("success" => $msg));
-    http_response_code(200);
-    exit();
-  }
 
-  // exits with error reporting if method invalid
-  public function validateMethod() {
-    // error if invalid request
-    if ($_SERVER["REQUEST_METHOD"] !== $this->method->value) {
-      $this->error("invalid request method. Expect only " . $this->method->value);
+    $response = array("success" => $msg);
+    if ( !empty(array_keys($this->data)) ) {
+      $response["data"] = $this->data;
     }
+
+    echo json_encode($response);
+    exit();
   }
 
   // exits with error reporting if unauthorized
@@ -98,13 +174,12 @@ class Rest {
     }
 
     // if login required, check for session token (username)
-    session_start(); //TODO move this?
     if (!isset($_SESSION['username'])) {
       $this->error("Route requires login.");
     }
 
     $username = $_SESSION['username'];
-    $this->logEntry->setUsername($username);
+    //$this->logEntry->setUsername($username);
     $this->perms = new Perms($username);
 
     if (count($this->auths) > 0) {

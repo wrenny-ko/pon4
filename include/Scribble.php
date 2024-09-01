@@ -167,6 +167,7 @@ EOF;
       'data_url' => $this->data_url,
       'likes'    => $this->likes,
       'dislikes' => $this->dislikes
+      //'comments' => $this->comments
     );
   }
 
@@ -203,6 +204,10 @@ EOF;
   // delete database row for the scribble
   // set all users with scribble avatar to the default avatar
   public function deleteScribbleUpdateAvatars($id) {
+    if ($id === "1") {
+      return "wont delete the default avatar scribble";
+    }
+
     $error = $this->deleteScribble($id);
     if (!empty($error)) {
       return "Couldn't delete scribble. " . $error;

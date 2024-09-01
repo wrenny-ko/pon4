@@ -1,7 +1,10 @@
 <?php
   header("Access-Control-Allow-Methods: GET");
 
-  require_once "../include/common/enableLogging.php"; //TODO remove
+  require_once "../include/common/enableLogging.php"; //TODO remove; for development debugging only
+  require_once "../include/common/initSession.php";
+  require_once "../include/DatabaseHandler.php";
+  require_once "../include/Perms.php";
 
   // redirect if invalid request
   if ($_SERVER["REQUEST_METHOD"] !== 'GET') {
@@ -14,14 +17,10 @@
   }
   $id = $_GET["id"];
 
-  session_start();
   $username = "anonymous";
   if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
   }
-
-  require_once "../include/DatabaseHandler.php";
-  require_once("../include/Perms.php");
 
   $perms = new Perms($username);
 ?>

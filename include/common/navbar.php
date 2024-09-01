@@ -3,6 +3,12 @@
   if (isset($_GET["search"])) {
     $search = $_GET["search"];
   }
+
+  $uname = "anonymous";
+  if (isset($_SESSION["username"])) {
+    $uname = $_SESSION["username"];
+  }
+  $pms = new Perms($uname);
 ?>
 <div class="navbar">
   <div class="nav-left">
@@ -22,6 +28,13 @@
         <img src="cup.png" class="icon nav-entry" alt="leaderboard"/>
       </a>
     </div>
+    <?php if ($pms->hasTech() || $pms->hasAdmin()) { ?>
+      <div class="log-nav">
+        <a href="/log.php">
+          <img src="scroll.png" class="icon nav-entry" alt="log"/>
+        </a>
+      </div>
+    <?php } ?>
     <div class="searchbar">
       <form class="search">
         <input type="image" src="search.png" name="searchButton" class="icon nav-entry search-icon" onclick="return search()"/>

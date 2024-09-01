@@ -1,7 +1,7 @@
 async function handleSetMaxRows() {
   const val = $('.set-max-rows-input')[0].value;
 
-  const res = await fetch("http://localhost:80/putLeaderboard.php?maxRows=" + val, {
+  const res = await fetch("putLeaderboard.php?maxRows=" + val, {
     method: 'PUT',
   });
 
