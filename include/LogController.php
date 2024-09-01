@@ -1,51 +1,99 @@
 <?php
-require_once "../include/Perms.php";
 
 enum LogAction: string {
   case Read = "read";
 }
 
 class LogController {
-  private $data;
-  private $logFilename;
-
-  const AuthMap = array(
-    LogAction::Read->value => array(AuthLevel::Tech, AuthLevel::Admin)
+  const RouteMap = array(
+    LogAction::Read->value => array(
+      "method" => RequestMethod::GET,
+      "login_required" => true,
+      "auth_levels" => array(AuthLevel::Tech, AuthLevel::Admin)
+    )
   );
 
-  public function __construct($logFilename) {
-    $this->logFilename = $logFilename;
+  private $rest;
+  private $action;
+
+public function __construct() {
+    // set up first for logging/error response if needed
+    $this->rest = new Rest();
+    $this->rest->setupLogging("api.log", "log");
+
+    if (!isset($_SERVER["REQUEST_METHOD"])) {
+      $this->rest->error("request method not set");
+    }
+
+    $method;
+    try {
+      $method = RequestMethod::from($_SERVER["REQUEST_METHOD"]);
+    } catch (\Throwable $e) {
+      $this->rest->error("request method not supported");
+    }
+
+    $this->rest->setMethod($method);
+
+    if (!isset($_GET["action"])) {
+      $this->rest->error("requires an 'action' query string");
+    }
+
+    $action;
+    try {
+      $action = LogAction::from($_GET["action"]);
+    } catch (\Throwable $e) {
+      $this->rest->error("action not supported");
+    }
+    $this->action = $action;
+
+    $this->rest->setLoginRequired( self::RouteMap[$action->value]["login_required"] );
+    $this->rest->setAuths( self::RouteMap[$action->value]["auth_levels"] );
+
+    $this->rest->compareMethod(self::RouteMap[$action->value]["method"] );
+    $this->rest->auth();
   }
 
-  public function getData() {
-    return $data;
+  public function handle() {
+    $msg = $this->handleAction();
+    if (!empty($msg)) {
+      $this->rest->error($msg);
+    }
+    $this->rest->success($this->action->value);
   }
 
-  public function handleAction($action, $endpoint) {
-    switch ($action) {
+  public function handleAction() {
+    switch ($this->action) {
       case LogAction::Read:
+        $endpoint = $this->rest->getQueryField("endpoint");
         return $this->read($endpoint);
         break;
     }
-    return "Action not found";
+    return "action not found";
   }
 
   //read log file, select endpoint entries, format to json
   public function read($endpoint) {
-    //TODO try catch wrapping on file read
-    $log = explode(PHP_EOL, file_get_contents($this->logFilename));
+    $log = explode(PHP_EOL, file_get_contents($this->rest->getLogFilename()));
+    $log = array_reverse($log); // serve the new entries first
     $curated = array();
     foreach ($log as $line) {
+      if (empty($line)) {
+        continue;
+      }
+
       // date | endpoint | method | username | success | message
       $lineArr = explode(" | ", $line);
-      
-      //TODO make this case insensitive?
-      if ($lineArr[1] === $endpoint) {
-        $curated[] = $line;
+
+      if (empty($endpoint)) {
+        $curated[] = $line; // show all logs if no endpoint given
+      } else {
+        if ($lineArr[1] === $endpoint) {
+          $curated[] = $line;
+        }
       }
     }
 
-    $this->data = $curated;
+    $this->rest->setDataField("lines", $curated);
     return "";
   }
 }
