@@ -16,7 +16,7 @@ class LogController {
   private $rest;
   private $action;
 
-public function __construct() {
+  public function __construct() {
     // set up first for logging/error response if needed
     $this->rest = new Rest();
     $this->rest->setupLogging("api.log", "log");
@@ -61,7 +61,7 @@ public function __construct() {
     $this->rest->success($this->action->value);
   }
 
-  public function handleAction() {
+  private function handleAction() {
     switch ($this->action) {
       case LogAction::Read:
         $endpoint = $this->rest->getQueryField("endpoint");
@@ -72,7 +72,7 @@ public function __construct() {
   }
 
   //read log file, select endpoint entries, format to json
-  public function read($endpoint) {
+  private function read($endpoint) {
     $log = explode(PHP_EOL, file_get_contents($this->rest->getLogFilename()));
     $log = array_reverse($log); // serve the new entries first
     $curated = array();

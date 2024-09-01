@@ -23,13 +23,14 @@
 }
 
 .leaderboard-table {
-  height: 75%;
   width: 100%;
   margin-top: 25px;
   display: table;
   background-color: #d49ad4;
   margin-bottom: auto;
   text-align: center;
+  border: 1px solid #9141ac;
+  border-radius: 4px;
 }
 
 .leaderboard-table > * {
@@ -44,7 +45,8 @@
   display: table-cell;
   max-height: 30px;
   text-align: center;
-  border: 1px solid grey;
+  border: 1px solid #9141ac;
+  border-radius: 4px;
 }
 
 .selected {
@@ -64,6 +66,13 @@
 .leaderboard-sort { 
   text-decoration: none;
   color: #813d9c;
+  transition: all 0.4s;
+  border-radius: 4px;
+}
+
+.leaderboard-sort:hover {
+  background-color: #888496;
+  cursor: pointer;
 }
 
 .leaderboard-row {
@@ -74,7 +83,22 @@
 .leaderboard-col {
   font-size: 1rem;
   font-weight: bold;
-  height: 50px;
+  height: 35px;
+  vertical-align: middle;
+}
+
+.leaderboard-user {
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  width: 100%;
+  height: 100%;
+  transition: all 0.4s;
+}
+
+.leaderboard-user:hover {
+  background-color: #888496;
+  cursor: pointer;
 }
 
 .leaderboard-avatar {
@@ -82,11 +106,21 @@
   width: 30px;
   height: 30px;
   border-radius: 40px;
+  margin-left: 10px;
+}
+
+.leaderboard-username {
+  margin-left: 10px;
 }
 
 .sort-dir {
   text-decoration: none;
   font-weight: bold;
+  transition: all 0.4s;
+}
+
+.sort-dir:hover {
+  background-color: #5e5c64;
 }
 
 .leaderboard-user {

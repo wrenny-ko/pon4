@@ -33,8 +33,22 @@
   text-decoration: none;
   color: #613583;
   text-shadow: 1px 1px 1px #000000;
+  transition: all 0.4s;
+}
+
+.log-line-endpoint:hover{
+  background-color: purple;
+  color: white;
+  cursor: pointer;
 }
 
 .selected {
   background-color: white;
 }
+
+.selected:hover{
+  background-color: purple;
+  color: white;
+  cursor: pointer;
+}
+

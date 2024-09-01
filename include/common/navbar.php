@@ -21,17 +21,20 @@
     <div class="new-post">
       <a href="/new.php">
         <img src="newpost.png" class="icon nav-entry" alt="newpost"/>
+        <span class="tooltip-text">Create a scribble</span>
       </a>
     </div>
     <div class="leaderboard-nav">
       <a href="/leaderboard.php">
         <img src="cup.png" class="icon nav-entry" alt="leaderboard"/>
+        <span class="tooltip-text">Leaderboard</span>
       </a>
     </div>
     <?php if ($pms->hasTech() || $pms->hasAdmin()) { ?>
       <div class="log-nav">
         <a href="/log.php">
           <img src="scroll.png" class="icon nav-entry" alt="log"/>
+          <span class="tooltip-text">API logs</span>
         </a>
       </div>
     <?php } ?>

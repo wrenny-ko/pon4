@@ -115,9 +115,11 @@ $leaderboard = new Leaderboard($sortCol, $sortDir);
           <div class="leaderboard-row">
             <?php if (!$leaderboard->columnHidden(LeaderboardColumn::Username)) { ?>
               <div class="leaderboard-col">
-                <a class="leaderboard-user" href="user.php?username=<?= $row["username"];?>">
+                <a class="leaderboard-user selectable" href="user.php?username=<?= $row["username"];?>">
                   <img class="leaderboard-avatar" id="avatar-<?= $row["username"];?>" icon/>
-                  <?= $row["username"];?>
+                  <div class="leaderboard-username">
+                    <?= $row["username"];?>
+                  </div>
                 </a>
               </div>
             <?php } ?>
@@ -152,25 +154,6 @@ $leaderboard = new Leaderboard($sortCol, $sortDir);
     </div>
   <script src="js/fetchAvatar.js"></script>
   <script src="js/fetchLeaderboardAvatars.js"></script>
-  <script>
-    const sp = new URLSearchParams(window.location.search);
-    const toSelect = '#sort-by-' + sp.get('sortCol').replace('_', '-');
-    const selected = $(toSelect)[0];
-    selected.classList.add('selected');
-    
-    const dirButton = document.createElement('a');
-    dirButton.classList.add('sort-dir');
-    let dir = '';
-    if (sp.get('sortDir') === 'down') {
-      dir = 'up';
-      dirButton.innerText = '^';
-    } else {
-      dir = 'down';
-      dirButton.innerText = 'v';
-    }
-    dirButton.href = 'leaderboard.php?sortCol=' + sp.get('sortCol') + '&sortDir=' + dir;
-    selected.appendChild(dirButton);
-  </script>
   <script src="js/leaderboard.js">
   </script>
 </body>

@@ -126,7 +126,7 @@ class Rest {
     if (isset($_SESSION['username'])) {
        $username = $_SESSION['username'];
     } else {
-      $username = "anon";
+      $username = "anonymous";
     }
     $this->logEntry->setUsername($username);
   }
