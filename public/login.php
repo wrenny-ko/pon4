@@ -28,7 +28,7 @@
         </div>
         <div class="input-field">
           <div class="field-label">Password</div>
-          <input type="text" class="text-input input-password" name="password" maxlength="40"/>
+          <input type="password" class="text-input input-password" name="password" maxlength="40"/>
         </div>
         <input class="submit-button" type="submit" value="Submit"/>
         <div class="nav-to-signup">

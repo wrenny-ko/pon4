@@ -20,7 +20,7 @@ async function populateScribble() {
   const st = $('.scribble-title')[0];
 
   // crude text wrap
-  const title = scribble.title;
+  let title = scribble.title;
   if (title.length > 15) {
     title = title.substr(0, 14) + "\n" + title.substr(15);
   }

@@ -32,7 +32,7 @@
         </div>
         <div class="inputField">
           <div class="fieldLabel">Password (alphanumeric)</div>
-          <input type="text" class="textInput inputPassword" name="password" maxlength="40"/>
+          <input type="password" class="textInput inputPassword" name="password" maxlength="40"/>
         </div>
         <input class="submitButton" type="submit" value="Submit"/>
         <div class="navToLogin">
