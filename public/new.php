@@ -1,10 +1,6 @@
 <?php
-  require_once "../include/common/enableLogging.php"; //TODO remove; for development debugging only
-  require_once "../include/common/initSession.php";
-  require_once "../include/DatabaseHandler.php";
-  require_once("../include/Perms.php");
+  require_once "../include/common/includes.php";
 ?>
-
 <?php require_once("../include/common/header.php"); ?>
   <link rel="stylesheet" href="css/new.css" type="text/css">
 </head>
@@ -32,6 +28,5 @@
     <input type="button" class="button title-button" value="Post it!"/>
     <input type="button" class="button close-title-modal" value="Go back!"/>
   </div>
-  <script src="js/fetchAvatar.js"></script>
   <script src="js/new.js"></script>
 </body>

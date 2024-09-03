@@ -4,11 +4,9 @@
     $search = $_GET["search"];
   }
 
-  $uname = "anonymous";
-  if (isset($_SESSION["username"])) {
-    $uname = $_SESSION["username"];
-  }
-  $pms = new Perms($uname);
+  $sc = new Scribble();
+  $sc->readScribbleAvatar($username); // $username defined in include/common/includes.php
+  $avatar = $sc->getScribble();
 ?>
 <div class="navbar">
   <div class="nav-left">
@@ -30,7 +28,7 @@
         <span class="tooltip-text">Leaderboard</span>
       </a>
     </div>
-    <?php if ($pms->hasTech() || $pms->hasAdmin()) { ?>
+    <?php if ($perms->hasTech() || $perms->hasAdmin()) { ?>
       <div class="log-nav">
         <a href="/log.php">
           <img src="scroll.png" class="icon nav-entry" alt="log"/>
@@ -46,17 +44,10 @@
     </div>
   </div>
   <div class="account nav-entry">
-    <?php if (session_status() === PHP_SESSION_ACTIVE and isset($_SESSION['username'])) { ?>
-      <a href="/user.php" class="account">
-        <img class="avatar" icon/>
-        <?= $_SESSION['username'];?>
-      </a>
-    <?php } else { ?>
-      <a href="/login.php" class="account">
-        <img class="avatar" icon/>
-        Login
-      </a>
-    <?php } ?>
+    <a href="<?= ($username !== "anonymous") ? "user.php" : "/login.php";?>" class="account">
+      <img class="avatar" src="<?= $avatar["data_url"];?>" icon/>
+      <?= ($username !== "anonymous") ? $username : "Login";?>
+    </a>
   </div>
   <script>
     function search() {

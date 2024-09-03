@@ -1,15 +1,5 @@
 <?php
-  require_once "../include/common/enableLogging.php"; //TODO remove; for development debugging only
-  require_once "../include/common/initSession.php";
-  require_once "../include/DatabaseHandler.php";
-  require_once("../include/Perms.php");
-
-  $username = "anonymous";
-  if (isset($_SESSION['username'])) {
-    $username = $_SESSION['username'];
-  }
-
-  $perms = new Perms($username);
+  require_once "../include/common/includes.php";
 
   // redirect if unauthorized
   if (!$perms->hasLevel(AuthLevel::Tech) && !$perms->hasLevel(AuthLevel::Admin)) {
@@ -38,6 +28,5 @@
       </div>
     </div>
   </div>
-  <script src="js/fetchAvatar.js"></script>
   <script src="js/log.js"></script>
 </body>

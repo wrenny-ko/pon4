@@ -1,18 +1,15 @@
 <?php
-  require_once "../include/common/enableLogging.php"; //TODO remove; for development debugging only
-  require_once "../include/common/initSession.php";
-  require_once "../include/DatabaseHandler.php";
-  require_once "../include/Perms.php";
+  require_once "../include/common/includes.php";
 
-  $username = "anonymous";
+  $uname = "anonymous";
   if (isset($_GET["username"])) {
-    $username = $_GET["username"];
+    $uname = $_GET["username"];
   } else {
     // reload this page with a param
     if (isset($_SESSION["username"])) {
-      $username = $_SESSION["username"];
+      $uname = $_SESSION["username"];
     }
-    header("location: user.php?username=" . $username);
+    header("location: user.php?username=" . $uname);
   }
 ?>
 <?php require_once("../include/common/header.php"); ?>
@@ -26,7 +23,7 @@
   <div class="bg">
     <div class="user-page">
       <div class="button-area">
-        <?php if (isset($_SESSION["username"]) && $username == $_SESSION["username"]) { ?>
+        <?php if (isset($_SESSION["username"]) && $uname == $_SESSION["username"]) { ?>
           <form class="logout-form" action="postLogout.php" method="post">
             <input class="logout-button" type="submit" value="Logout"/>
           </form>
@@ -36,17 +33,16 @@
         <div class="scribble-card-cart-title">
           <?= "Scribbles by"; ?>
           <br>
-          <?= "$username"; ?>
+          <?= "$uname"; ?>
         </div>
         <div class="scribble-card-cart">
           No scribbles...
-          <?php if (isset($_SESSION["username"]) && $username == $_SESSION["username"]) { ?>
+          <?php if (isset($_SESSION["username"]) && $uname == $_SESSION["username"]) { ?>
             <a href="new.php">Create one?!</a>
           <?php } ?>
         </div>
       </div>
     </div>
   </div>
-  <script src="js/fetchAvatar.js"></script>
   <script src="js/populateScribbleCardCart.js"></script>
 </body>

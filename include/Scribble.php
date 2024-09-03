@@ -159,7 +159,7 @@ EOF;
     return "";
   }
 
-  protected function getScribble() {
+  public function getScribble() {
     return array(
       'id'       => $this->id,
       'username' => $this->username,
@@ -171,7 +171,7 @@ EOF;
     );
   }
 
-  protected function readScribbleAvatar($username) {
+  public function readScribbleAvatar($username) {
     $error = $this->readAvatarID($username);
     if (!empty($error)) {
       return "Error reading avatar ID. " . $error;

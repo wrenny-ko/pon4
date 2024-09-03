@@ -1,10 +1,7 @@
 <?php
   header("Access-Control-Allow-Methods: GET");
 
-  require_once "../include/common/enableLogging.php"; //TODO remove; for development debugging only
-  require_once "../include/common/initSession.php";
-  require_once "../include/DatabaseHandler.php";
-  require_once "../include/Perms.php";
+  require_once "../include/common/includes.php";
 
   // redirect if invalid request
   if ($_SERVER["REQUEST_METHOD"] !== 'GET') {
@@ -16,13 +13,6 @@
       header("location: index.php");
   }
   $id = $_GET["id"];
-
-  $username = "anonymous";
-  if (isset($_SESSION['username'])) {
-    $username = $_SESSION['username'];
-  }
-
-  $perms = new Perms($username);
 ?>
 <?php require_once("../include/common/header.php"); ?>
   <link rel="stylesheet" href="css/scribble.css" type="text/css">
@@ -60,6 +50,5 @@
       <?php } ?>
     </div>
   </div>
-  <script src="js/fetchAvatar.js"></script>
   <script src="js/scribble.js"></script>
 </body>

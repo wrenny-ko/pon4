@@ -1,20 +1,9 @@
 <?php
+  require_once "../include/common/includes.php";
+  require_once "../include/Leaderboard.php";
 
-require_once "../include/common/initSession.php";
-
-require_once "../include/DatabaseHandler.php";
-require_once("../include/Perms.php");
-require_once("../include/Leaderboard.php");
-
-$username = "anonymous";
-if (isset($_SESSION['username'])) {
-  $username = $_SESSION['username'];
-}
-$perms = new Perms($username);
-
-$leaderboard = new Leaderboard();
+  $leaderboard = new Leaderboard();
 ?>
-
 <?php require_once("../include/common/header.php"); ?>
   <link rel="stylesheet" href="css/leaderboard.css" type="text/css">
   <script src="js/jquery-3.7.1.min.js"></script>
@@ -61,7 +50,6 @@ $leaderboard = new Leaderboard();
       </div>
     </div>
   </div>
-  <script src="js/fetchAvatar.js"></script>
   <script src="js/axios.min.js"></script>
   <script src="js/leaderboard.js"></script>
 </body>

@@ -1,8 +1,5 @@
 <?php
-  require_once "../include/common/enableLogging.php"; //TODO remove; for development debugging only
-  require_once "../include/common/initSession.php";
-  require_once "../include/DatabaseHandler.php";
-  require_once "../include/Perms.php";
+  require_once "../include/common/includes.php";
 
   // if logged in, don't show login page
   if (isset($_SESSION['username'])) {
@@ -44,5 +41,4 @@
       </form>
     </div>
   </div>
-  <script src="js/fetchAvatar.js"></script>
 </body>
