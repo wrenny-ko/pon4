@@ -50,12 +50,6 @@ CREATE TABLE `leaderboard` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
-CREATE TABLE `leaderboard_hidden_columns` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `column_name` varchar(20) NOT NULL UNIQUE,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
 CREATE TABLE `badges` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user` int(11) NOT NULL,
@@ -127,4 +121,12 @@ INSERT INTO `perms` (`user`, `tech`) SELECT id, TRUE FROM `users` WHERE username
 INSERT INTO `users` (`username`, `email`, `password`) VALUES ('beta','beta@pon4.mail', '6261616435396634663434616637376559a9c9b67d61e1850d5454129af3a072');
 INSERT INTO `perms` (`user`, `beta`) SELECT id, TRUE FROM `users`WHERE username = 'beta';
 
-INSERT INTO `leaderboard` (`max_rows`) VALUES ('10');
+INSERT INTO `leaderboard` (`max_rows`) VALUES ('8');
+
+-- random users to test leaderboard pagination
+INSERT INTO `users` (`username`, `email`, `password`) VALUES ('user1','user1@pon4.mail', 'deadbeef');
+INSERT INTO `users` (`username`, `email`, `password`) VALUES ('user2','user2@pon4.mail', 'deadbeef');
+INSERT INTO `users` (`username`, `email`, `password`) VALUES ('user3','user3@pon4.mail', 'deadbeef');
+INSERT INTO `users` (`username`, `email`, `password`) VALUES ('user4','user4@pon4.mail', 'deadbeef');
+INSERT INTO `users` (`username`, `email`, `password`) VALUES ('user5','user5@pon4.mail', 'deadbeef');
+INSERT INTO `users` (`username`, `email`, `password`) VALUES ('user6','user6@pon4.mail', 'deadbeef');

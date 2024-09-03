@@ -7,6 +7,7 @@ enum ScribbleAction: string {
   case Comment = "comment";
   case Get = "get";
   case GetAvatar = "get_avatar";
+  case GetAvatars = "get_avatars";
   case Upload = "upload";
   case Search = "search";
   case UserGif = "user_gif";
@@ -40,6 +41,11 @@ class ScribbleController extends Scribble {
       "auth_levels" => array()
     ),
     ScribbleAction::GetAvatar->value => array(
+      "method" => RequestMethod::GET,
+      "login_required" => false,
+      "auth_levels" => array()
+    ),
+    ScribbleAction::GetAvatars->value => array(
       "method" => RequestMethod::GET,
       "login_required" => false,
       "auth_levels" => array()
@@ -138,6 +144,9 @@ class ScribbleController extends Scribble {
         }
         return $this->getAvatar($username);
         break;
+      case ScribbleAction::GetAvatars:
+        return $this->getAvatars();
+        break;
       case ScribbleAction::Upload:
         $this->rest->setSuccessCode(201);
         $username = $this->rest->getUsername();
@@ -211,6 +220,24 @@ class ScribbleController extends Scribble {
     }
 
     $this->rest->setDataField("scribble", $this->getScribble());
+    return "";
+  }
+
+  private function getAvatars() {
+    $usernames = $this->rest->getRequiredQueryField("usernames");
+    $usernames = explode(',', $usernames);
+
+    $avatars = array();
+    foreach ($usernames as $name) {
+      $error = $this->readScribbleAvatar($name);
+      if (!empty($error)) {
+        return "Can't read scribble avatar. " . $error;
+      }
+
+      $avatars[$name] = $this->getScribble();
+    }
+
+    $this->rest->setResponseField("avatars", $avatars);
     return "";
   }
 

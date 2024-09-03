@@ -16,18 +16,14 @@ enum LeaderboardSortDir: int {
 }
 
 class Leaderboard extends DatabaseHandler {
-  private $hidden;
   private $maxRows;
-  private $sortCol;
-  private $sortDir;
-  private $board;
+  protected $numTotalEntries;
+  protected $numFilteredEntries;
+  protected $board;
 
-  public function __construct(LeaderboardColumn $sortCol = LeaderboardColumn::TotalScribbles, LeaderboardSortDir $sortDir = LeaderboardSortDir::Down) {
+  public function __construct() {
     $this->readMaxRows();
-    $this->readHidden();
-    $this->sortCol = $sortCol;
-    $this->sortDir = $sortDir;
-    $this->populate();
+    $this->readNumTotalEntries();
   }
 
   public function getBoard() {
@@ -62,34 +58,21 @@ class Leaderboard extends DatabaseHandler {
     return "";
   }
 
-  protected function writeSort(LeaderboardColumn $col, $dir) {
-    $sql = "UPDATE max_rows FROM leaderboard where id = 1";
+  protected function readNumTotalEntries() {
+    $sql = "SELECT COUNT(*) FROM users";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
+    $statement = $pdo->query($sql);
 
-    if ( !$statement->execute(array($num)) ) {
-      return "Database lookup failed.";
-    }
+    $this->numTotalEntries = $statement->fetchColumn();
 
     $statement = null;
     return "";
   }
 
-  protected function readHidden() {
-    $sql = "SELECT column_name FROM leaderboard_hidden_columns";
-    $pdo = $this->connect();
-    $this->hidden = $pdo->query($sql)->fetchAll(PDO::FETCH_COLUMN);
-    return "";
-  }
-
-  public function columnHidden(LeaderboardColumn $col) {
-    return in_array($col, $this->hidden);
-  }
-
-  public function populate() {
+  public function populate(LeaderboardColumn $sortCol = LeaderboardColumn::TotalScribbles, LeaderboardSortDir $sortDir = LeaderboardSortDir::Down) {
     // select each user
     //   select all scribbles by them, calc totals
-    //   sort by sortcol in sortdir, truncate by numrows
+    //   sort by sortcol in sortdir, truncate by max numrows
     //   set class variable
     $sql = "SELECT * FROM users";
     $pdo = $this->connect();
@@ -155,13 +138,14 @@ EOF;
     }
 
     // sort users by column and direction
-    $dir = $this->sortDir->value;
-    array_multisort(array_column($users, $this->sortCol->value), $dir, SORT_REGULAR, $users);
+    $dir = $sortDir->value; // have to break this out of the function because of a 'read-only' error below
+    array_multisort(array_column($users, $sortCol->value), $dir, SORT_REGULAR, $users);
 
     // truncate for final leaderboard
     $leaderboard = array_slice($users, 0, $this->maxRows);
 
     $this->board = $leaderboard;
+    $this->numFilteredEntries = $this->maxRows;
 
     $statement = null;
     return "";

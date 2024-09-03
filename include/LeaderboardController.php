@@ -2,8 +2,7 @@
 
 enum LeaderboardAction: string {
   case SetMaxRows = "set_max_rows";
-  case SetHiddenColumn = "set_hidden_column";
-  case UnsetHiddenColumn = "unset_hidden_column";
+  case FetchRows  = "fetch_rows";
 }
 
 class LeaderboardController extends Leaderboard {
@@ -12,6 +11,11 @@ class LeaderboardController extends Leaderboard {
       "method" => RequestMethod::PUT,
       "login_required" => true,
       "auth_levels" => array(AuthLevel::Admin)
+    ),
+    LeaderboardAction::FetchRows->value => array(
+      "method" => RequestMethod::GET,
+      "login_required" => false,
+      "auth_levels" => array()
     )
   );
 
@@ -19,6 +23,9 @@ class LeaderboardController extends Leaderboard {
   private $action;
 
   public function __construct() {
+    $this->readMaxRows();
+    $this->readNumTotalEntries();
+
     // set up first for logging/error response if needed
     $this->rest = new Rest();
     $this->rest->setupLogging("api.log", "leaderboard");
@@ -69,9 +76,8 @@ class LeaderboardController extends Leaderboard {
         $maxRows = $this->rest->getQueryField("max_rows");
         return $this->setMaxRows($maxRows);
         break;
-      case LeaderboardAction::SetHiddenColumn:
-      case LeaderboardAction::UnsetHiddenColumn:
-        return "not implemented";
+      case LeaderboardAction::FetchRows:
+        return $this->fetchRows();
         break;
     }
     return "action not found";
@@ -81,12 +87,57 @@ class LeaderboardController extends Leaderboard {
     $max = "10";
     if (!empty($maxRows)) {
       if (!filter_var( $maxRows, FILTER_VALIDATE_INT, array('options' => array( 'min_range' => 0)) )) {
-        $this->error("invalid max_rows value: requires integer greater than 0");
+        $this->rest->error("invalid max_rows value: requires integer greater than 0");
       }
       $max = $maxRows;
     }
 
     $this->writeMaxRows($max);
     return "";
+  }
+
+  private function fetchRows() {
+    $draw = $this->rest->getRequiredQueryField("draw");
+    $this->rest->setResponseField("draw", $draw);
+
+    $this->rest->setResponseField("recordsTotal", $this->numTotalEntries);
+
+    if (!isset($_GET["order"])) {
+      $this->rest->error("invalid datatables query. sort order not present");
+    }
+    $order = $_GET["order"];
+
+    if (!isset($order[0])) {
+      $this->rest->error("invalid datatables query. sort order not present");
+    }
+
+    if (!isset($order[0]["dir"])) {
+      $this->rest->error("invalid datatables query. order dir not present");
+    }
+    $dir = $order[0]["dir"];
+
+    $sortDir;
+    if ($dir === "asc") {
+      $sortDir = LeaderboardSortDir::Up;
+    } else if ($dir === "desc"){
+      $sortDir = LeaderboardSortDir::Down;
+    } else {
+      $this->rest->error("invalid datatables query. order dir not matched");
+    }
+
+    if (!isset($order[0]["name"])) {
+      $this->rest->error("invalid datatables query. order column name not present");
+    }
+    $name = $order[0]["name"];
+
+    $sortCol = LeaderboardColumn::tryFrom($name);
+    if ($sortCol === null) {
+      $this->rest->error("invalid datatables query. order column name not matched");
+    }
+
+    $this->populate($sortCol, $sortDir);
+    $this->rest->setData($this->board);
+    $this->rest->setResponseField("recordsFiltered", $this->numFilteredEntries);
+    $this->rest->success("sortCol: '" . $sortCol->value . "', sortDir: '" . $dir . "'");
   }
 }

@@ -1,7 +1,5 @@
 <?php
 
-const LOG_DIR = "/var/log/pon4/";
-
 enum RequestMethod: string {
   case GET    = "GET";
   case PUT    = "PUT";
@@ -48,6 +46,7 @@ class Rest {
   private RestLogEntry $logEntry;
   private Perms $perms;
   private array $data;
+  private array $responseFields;
   private int $successCode;
 
   // Construct this after calling session_start()
@@ -56,6 +55,7 @@ class Rest {
     $this->loginRequired = false;
     $this->auths = array();
     $this->data = array();
+    $this->responseFields = array();
     $this->successCode = 200;
   }
 
@@ -73,6 +73,14 @@ class Rest {
 
   public function setDataField($field, $val) {
     $this->data[$field] = $val;
+  }
+
+  public function setResponseField($field, $val) {
+    $this->responseFields[$field] = $val;
+  }
+
+  public function setData($data) {
+    $this->data = $data;
   }
 
   public function setSuccessCode($code) {
@@ -117,14 +125,16 @@ class Rest {
   }
 
   public function setupLogging($logFilename, $endpointName) {
-    date_default_timezone_set('UTC');
+    date_default_timezone_set("UTC");
     $this->logEntry = new RestLogEntry($endpointName);
     $this->logEntry->setMethod($this->method->value);
-    $this->logFilename = LOG_DIR . $logFilename;
+
+    $env = parse_ini_file($_SERVER["DOCUMENT_ROOT"] . '/../.env');
+    $this->logFilename = $env["LOG_DIR"] . $logFilename;
 
     $username;
-    if (isset($_SESSION['username'])) {
-       $username = $_SESSION['username'];
+    if (isset($_SESSION["username"])) {
+       $username = $_SESSION["username"];
     } else {
       $username = "anonymous";
     }
@@ -158,8 +168,13 @@ class Rest {
     $this->log($msg);
 
     $response = array("success" => $msg);
+
     if ( !empty(array_keys($this->data)) ) {
       $response["data"] = $this->data;
+    }
+
+    foreach ($this->responseFields as $key => $value) {
+      $response[$key] = $value;
     }
 
     echo json_encode($response);
