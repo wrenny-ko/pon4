@@ -89,7 +89,7 @@ class Rest {
 
   public function compareMethod($method) {
     if ($this->method !== $method) {
-      $this->error("method does not match expected (" . $method . ")");
+      $this->error("method does not match expected (" . $method->value . ")");
     }
   }
 

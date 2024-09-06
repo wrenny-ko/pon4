@@ -3,6 +3,8 @@ import { Scribble } from './scribble.js';
 import { Draw } from './new.js';
 import { Leaderboard } from './leaderboard.js';
 import { User } from './user.js';
+import { Login } from './login.js';
+import { Signup } from './signup.js';
 
 class App {
   pages = {};
@@ -13,10 +15,10 @@ class App {
     this.pages['scribble'] = new Scribble();
     this.pages['new'] = new Draw();
     this.pages['leaderboard'] = new Leaderboard();
-    this.pages['user'] = new User();//TODO
+    this.pages['user'] = new User();
     //this.pages['log'] = new Log('log', 'API logs')
-    //this.pages['login'] = new Login('login', 'API logs')
-    //this.pages['signup'] = new Signup('log', 'API logs')
+    this.pages['login'] = new Login();
+    this.pages['signup'] = new Signup()
   }
 
   run() {

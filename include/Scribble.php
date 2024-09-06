@@ -191,22 +191,22 @@ EOF;
 
     $user_data = array();
 
-    $sql = "SELECT * FROM likes JOIN users WHERE likes.scribble = ? AND likes.user = users.id";
+    $sql = "SELECT * FROM likes JOIN users WHERE likes.scribble = ? AND likes.user = users.id AND users.username = ?";
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
 
-    if ( !$statement->execute(array($id)) ) {
+    if ( !$statement->execute(array($id, $username)) ) {
       return "Database update failed.";
     }
 
     $user_data['liked'] = ($statement->rowCount() > 0) ? true : false;
 
     
-    $sql = "SELECT * FROM dislikes JOIN users WHERE dislikes.scribble = ? AND dislikes.user = users.id";
+    $sql = "SELECT * FROM dislikes JOIN users WHERE dislikes.scribble = ? AND dislikes.user = users.id AND users.username = ?";
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);
 
-    if ( !$statement->execute(array($id)) ) {
+    if ( !$statement->execute(array($id, $username)) ) {
       return "Database update failed.";
     }
 

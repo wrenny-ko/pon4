@@ -29,11 +29,17 @@
   border: 1px solid #241f31;
   border-radius: 4px;
   box-sizing: border-box;
-  transition: all 0.4s;
+  transition: background-color 0.4s;
+  transition: cursor 0.4s;
   color: #3d3846;
 }
 
 .logout-button:hover {
   background-color: rgba(255,59,32,1);
   cursor: pointer;
+}
+
+.empty-cart-alt {
+  display: flex;
+  flex-direction: column;
 }

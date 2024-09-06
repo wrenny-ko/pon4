@@ -2,8 +2,10 @@ export class User {
   static pageName = 'user';
   static title = 'User page';
 
+  listeners = [];
+
   async setup() {
-    this.displayUserSpecific();
+    this.userSpecificSetup();
     this.runSearch();
   }
 
@@ -12,20 +14,53 @@ export class User {
   }
 
   teardown() {
-    return;
+    this.userSpecificTeardown();
   }
 
-  displayUserSpecific() {
-    if ($('#nav-to-user').length) {
+  userSpecificSetup() {
+    const sp = new URLSearchParams(window.location.search);
+    const usernameParam = sp.get('username');
+
+    const navto = $('#nav-to-user');
+    if (navto.length && navto[0].innerText === usernameParam) {
       $('.logout-form')[0].classList.remove('hidden');
       $('.create-prompt')[0].classList.remove('hidden');
+      $('.logout-button')[0].addEventListener('click', this.postLogout);
     } else {
       $('.logout-form')[0].classList.add('hidden');
-      $('.create-prompt')[0].classList.add('hidden');
+      $('.create-prompt')[0].classList.add('hidden'); // TODO add to 
     }
   }
 
+  userSpecificTeardown() {
+    const sp = new URLSearchParams(window.location.search);
+    const usernameParam = sp.get('username');
+
+    const navto = $('#nav-to-user');
+    if (navto.length && navto[0].innerText === usernameParam) {
+      $('.logout-form')[0].classList.add('hidden');
+      $('.create-prompt')[0].classList.add('hidden');
+      $('.logout-button')[0].removeEventListener('click', this.postLogout);
+    }
+  }
+
+  async postLogout() {
+    axios.post(
+      'api/account.php?action=logout'
+    ).then( res => {
+      window.location.href = '/index'; // force page reload
+    }).catch(err => {
+      console.log(err.response);
+    });
+  }
+
   async runSearch() {
+    const cartAlt = $('.empty-cart-alt')[0];
+    cartAlt.classList.remove('hidden');
+
+    const cart = $('#user-cart')[0];
+    cart.classList.add('hidden');
+
     const sp = new URLSearchParams(window.location.search);
     const username_param = sp.get('username');
 
@@ -36,8 +71,6 @@ export class User {
       url += '&search=by%3A' + username_param;
     }
 
-    const cart = $('#user-cart')[0];
-
     const response = await axios.get(url)
       .catch((error) => {
         console.log(error);
@@ -45,7 +78,6 @@ export class User {
     });
 
     if (!response.data.hasOwnProperty('scribbles') || response.data.scribbles.length === 0) {
-      cart.innerHTML = 'No scribbles found by that query...';
       return;
     }
 
@@ -77,6 +109,9 @@ export class User {
       newCard.appendChild(newTitle);
 
       //TODO add author name and avatar
+
+      cartAlt.classList.add('hidden');
+      cart.classList.remove('hidden');
     }
   }
 }

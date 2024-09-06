@@ -9,7 +9,9 @@
   <link rel="stylesheet" href="css/new.css" type="text/css">
   <link rel="stylesheet" href="css/leaderboard.css" type="text/css">
   <link rel="stylesheet" href="css/user.css" type="text/css">
-  
+  <link rel="stylesheet" href="css/login.css" type="text/css">
+  <link rel="stylesheet" href="css/signup.css" type="text/css">
+
   <script src="js/jquery-3.7.1.min.js"></script>
   <script src="js/axios.min.js"></script>
   <link href="https://cdn.datatables.net/v/dt/dt-2.1.5/datatables.min.css" rel="stylesheet">
@@ -32,5 +34,11 @@
   </div>
   <div class="page hidden" id="user-page">
     <?php require_once "../include/page/user.php";?>
+  </div>
+  <div class="page hidden" id="login-page">
+    <?php require_once "../include/page/login.php";?>
+  </div>
+  <div class="page hidden" id="signup-page">
+    <?php require_once "../include/page/signup.php";?>
   </div>
 </body>

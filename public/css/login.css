@@ -16,7 +16,8 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  transition: all 0.4s;
+  transition: background-color 0.4s;
+  transition: box-shadow 0.4s;
 }
 
 .login-form:hover {
@@ -58,7 +59,7 @@
   background-color: rgba(255, 255, 255, 0.4);
 }
 
-.submit-button {
+.login-submit-button {
   width: 50%;
   background-color: #9141ac;
   height: 40%;
@@ -67,15 +68,16 @@
   border: 1px solid #813d9c;
   border-radius: 4px;
   box-sizing: border-box;
-  transition: all 0.4s;
+  transition: background-color 0.4s;
+  transition: cursor 0.4s;
 }
 
-.submit-button:hover {
+.login-submit-button:hover:not([disabled]) {
   background-color: rgba(191,127,191, 1);
   cursor: pointer;
 }
 
-.error-box {
+.login-error-box {
   height: 100%;
   padding-top: 20px;
   padding-bottom: 20px;
