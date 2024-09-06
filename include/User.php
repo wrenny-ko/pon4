@@ -79,7 +79,7 @@ class User extends DatabaseHandler {
     return "";
   }
 
-  protected function updateAvatar($scribble_id, $username) {
+  public function updateAvatar($scribble_id, $username) {
     $sql = "UPDATE users SET avatar = ? WHERE username = ?";
     $pdo = $this->connect();
     $statement = $pdo->prepare($sql);

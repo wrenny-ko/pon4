@@ -11,6 +11,8 @@ enum ScribbleAction: string {
   case Upload = "upload";
   case Search = "search";
   case UserGif = "user_gif";
+  case SetAvatar = "set_avatar";
+  case GetMetadata = "get_metadata";
 }
 
 class ScribbleController extends Scribble {
@@ -64,6 +66,16 @@ class ScribbleController extends Scribble {
       "method" => RequestMethod::GET,
       "login_required" => false,
       "auth_levels" => array(AuthLevel::Beta)
+    ),
+    ScribbleAction::SetAvatar->value => array(
+      "method" => RequestMethod::PUT,
+      "login_required" => true,
+      "auth_levels" => array()
+    ),
+    ScribbleAction::GetMetadata->value => array(
+      "method" => RequestMethod::GET,
+      "login_required" => false,
+      "auth_levels" => array()
     )
   );
 
@@ -159,6 +171,16 @@ class ScribbleController extends Scribble {
       case ScribbleAction::UserGif:
         return $this->userGif();
         break;
+      case ScribbleAction::SetAvatar:
+        $id = $this->rest->getRequiredQueryField("id");
+        $username = $this->rest->getUsername();
+        return $this->setAvatar($id, $username);
+        break;
+      case ScribbleAction::GetMetadata:
+        $id = $this->rest->getRequiredQueryField("id");
+        $username = $this->rest->getUsername();
+        return $this->getMeta($id, $username);
+        break;
     }
     return "action not found";
   }
@@ -196,7 +218,7 @@ class ScribbleController extends Scribble {
       return "Improperly formatted json fields.";
     }
 
-    if (strlen($scribble->title) >= 30) {
+    if (strlen($scribble->title) > 30) {
       return "Titles have max character limits of 30.";
     }
 
@@ -247,7 +269,16 @@ class ScribbleController extends Scribble {
       return "Error reading scribble. " . $msg;
     }
 
-    $this->rest->setDataField("scribble", $this->getScribble());
+    $this->rest->setResponseField("scribble", $this->getScribble());
+  }
+
+  private function getMeta($id, $username) {
+    $msg = $this->readMetadata($id, $username);
+    if (!empty($msg)) {
+      return "Error reading metadata. " . $msg;
+    }
+
+    $this->rest->setResponseField("metadata", $this->getMetadata());
   }
 
   // search titles by a query string
@@ -259,7 +290,7 @@ class ScribbleController extends Scribble {
         return "Error searching scribbles. " . $error;
       }
 
-      $this->rest->setDataField("scribbles", $this->scribbleList);
+      $this->rest->setResponseField("scribbles", $this->scribbleList);
     } else {
       //check for "user:<username>" for separate search
       $query = htmlspecialchars_decode($_GET["search"]);
@@ -279,7 +310,7 @@ class ScribbleController extends Scribble {
         }
       }
 
-      $this->rest->setDataField("scribbles", $this->scribbleList);
+      $this->rest->setResponseField("scribbles", $this->scribbleList);
     }
     return "";
   }
@@ -289,6 +320,20 @@ class ScribbleController extends Scribble {
     return "not implemented";
 
     $this->rest->setDataField("url", $url);
+    return "";
+  }
+
+  private function setAvatar($id, $username) {
+    $user = new User();
+    $err = $user->updateAvatar($id, $username);
+    if (!empty($err)) {
+      return "Error setting avatar. " . $err;
+    }
+
+    $scrib = new Scribble();
+    $scrib->readScribble($id);
+
+    $this->rest->setResponseField('scribble', $scrib->getScribble());
     return "";
   }
 }

@@ -89,7 +89,7 @@ class Rest {
 
   public function compareMethod($method) {
     if ($this->method !== $method) {
-      $this->error("method does not match expected (" . $this->method->value . ")");
+      $this->error("method does not match expected (" . $method . ")");
     }
   }
 
@@ -197,7 +197,9 @@ class Rest {
     //$this->logEntry->setUsername($username);
     $this->perms = new Perms($username);
 
-    if (count($this->auths) > 0) {
+    if (count($this->auths) === 0) {
+      return; // authorize if no auth roles required
+    } else {
       // allow access if user has perms for at least one of the listed levels
       $authorized = false;
       foreach ($this->auths as $level) {

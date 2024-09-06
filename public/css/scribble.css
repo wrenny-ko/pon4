@@ -40,7 +40,7 @@
 
 .scribble-title {
   margin-bottom: 30px;
-  font-size: 2.5rem;
+  font-size: 2rem;
   text-wrap: wrap;
   text-align: center;
 }
@@ -94,8 +94,16 @@
   color: #26a269;
 }
 
+.liked {
+  background-color: #33d17a;
+}
+
 .dislikes {
   color: #e80d0d;
+}
+
+.disliked {
+  background-color: #ed333b;
 }
 
 .ratio {

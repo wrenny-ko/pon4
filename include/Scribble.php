@@ -11,6 +11,7 @@ class Scribble extends DatabaseHandler {
   protected $avatarID;
   protected $scribbleList;
   protected $numWipedAvatars;
+  protected $user_data;
 
   public function getDataURL() {
     return $this->data_url;
@@ -171,6 +172,52 @@ EOF;
     );
   }
 
+  public function getMetadata() {
+    return array(
+      'id'       => $this->id,
+      'username' => $this->username,
+      'title'    => $this->title,
+      'likes'    => $this->likes,
+      'dislikes' => $this->dislikes,
+      'user_data' => $this->user_data
+    );
+  }
+
+  public function readMetadata($id, $username) {
+    $err = $this->readScribble($id);
+    if (!empty($err)) {
+      return "Error reading scribble. " . $err;
+    }
+
+    $user_data = array();
+
+    $sql = "SELECT * FROM likes JOIN users WHERE likes.scribble = ? AND likes.user = users.id";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($id)) ) {
+      return "Database update failed.";
+    }
+
+    $user_data['liked'] = ($statement->rowCount() > 0) ? true : false;
+
+    
+    $sql = "SELECT * FROM dislikes JOIN users WHERE dislikes.scribble = ? AND dislikes.user = users.id";
+    $pdo = $this->connect();
+    $statement = $pdo->prepare($sql);
+
+    if ( !$statement->execute(array($id)) ) {
+      return "Database update failed.";
+    }
+
+    $user_data['disliked'] = ($statement->rowCount() > 0) ? true : false;
+
+    $this->user_data = $user_data;
+
+    $statement = null;
+    return "";
+  }
+
   public function readScribbleAvatar($username) {
     $error = $this->readAvatarID($username);
     if (!empty($error)) {
@@ -234,13 +281,14 @@ EOF;
     }
 
     if ($statement->rowCount() === 0) {
-      return "No scribbles exist.";
+      $this->scribbleList = array();
+      return ""; // let controller return an empty list
     }
 
     $list = array();
     while ($row = $statement->fetch()) {
-      $row['title'] = htmlspecialchars_decode($row['title']);
-      $list[] = $row;
+      $row["title"] = htmlspecialchars_decode($row['title']);
+      $list[$row["id"]] = $row;
     }
 
     $this->scribbleList = $list;
@@ -261,7 +309,8 @@ EOF;
     }
 
     if ($statement->rowCount() === 0) {
-      return "No scribbles exist.";
+      $this->scribbleList = array();
+      return ""; // let controller return an empty list
     }
 
     $list = array();
@@ -289,7 +338,8 @@ EOF;
     }
 
     if ($statement->rowCount() === 0) {
-      return "No scribbles exist.";
+      $this->scribbleList = array();
+      return ""; // let controller return an empty list
     }
 
     $list = array();

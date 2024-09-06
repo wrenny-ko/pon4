@@ -1,0 +1,12 @@
+<IfModule mod_rewrite.c>
+
+   RewriteEngine On
+
+   RewriteCond %{REQUEST_URI} !^/.*\.(ico|png|css|js)$
+   RewriteCond %{REQUEST_URI} !^/api/.*\.php$
+   RewriteCond %{REQUEST_FILENAME}  -f [OR]
+   RewriteCond %{REQUEST_FILENAME} !-f
+
+   RewriteRule ^(.*)$ index.php [L,QSA]
+
+</IfModule>

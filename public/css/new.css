@@ -100,7 +100,6 @@
 .title-modal {
   width: 50%;
   height: 50%;
-  z-index: -1;
   background-color: #813d9c;
   display: flex;
   flex-direction: column;
@@ -111,6 +110,16 @@
 
 .title-label {
   margin: 10px;
+}
+
+.title-post-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  transition: all .04s;
 }
 
 .input-title {
