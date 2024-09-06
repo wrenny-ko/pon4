@@ -10,6 +10,7 @@
 .endpoint-title {
   font-size: 3rem;
   height: 70px;
+  color: #813d9c;
 }
 
 .log-box {
@@ -33,7 +34,9 @@
   text-decoration: none;
   color: #613583;
   text-shadow: 1px 1px 1px #000000;
-  transition: all 0.4s;
+  transition: background-color 0.4s;
+  transition: color 0.4s;
+  transition: cursor 0.4s;
 }
 
 .log-line-endpoint:hover{
@@ -44,6 +47,9 @@
 
 .selected {
   background-color: white;
+  transition: background-color 0.4s;
+  transition: color 0.4s;
+  transition: cursor 0.4s;
 }
 
 .selected:hover{

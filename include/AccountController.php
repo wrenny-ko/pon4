@@ -4,6 +4,7 @@ enum AccountAction: string {
   case Login = "login";
   case Logout = "logout";
   case Signup = "signup";
+  case SetAvatar = "set_avatar";
 }
 
 class AccountController extends User {
@@ -21,6 +22,11 @@ class AccountController extends User {
     AccountAction::Signup->value => array(
       "method" => RequestMethod::POST,
       "login_required" => false,
+      "auth_levels" => array()
+    ),
+    AccountAction::SetAvatar->value => array(
+      "method" => RequestMethod::PUT,
+      "login_required" => true,
       "auth_levels" => array()
     )
   );
@@ -82,6 +88,11 @@ class AccountController extends User {
       case AccountAction::Signup:
         return $this->signup();
         break;
+      case AccountAction::SetAvatar:
+        $id = $this->rest->getRequiredQueryField("id");
+        $username = $this->rest->getUsername();
+        return $this->setAvatar($id, $username);
+        break;
     }
     return "action not found";
   }
@@ -133,6 +144,19 @@ class AccountController extends User {
       return "Error signing up user. " . $err;
     }
 
+    return "";
+  }
+
+  private function setAvatar($id, $username) {
+    $err = $this->updateAvatar($id, $username);
+    if (!empty($err)) {
+      return "Error setting avatar. " . $err;
+    }
+
+    $scrib = new Scribble();
+    $scrib->readScribble($id);
+
+    $this->rest->setResponseField('scribble', $scrib->getScribble());
     return "";
   }
 }

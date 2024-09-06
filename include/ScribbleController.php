@@ -11,7 +11,6 @@ enum ScribbleAction: string {
   case Upload = "upload";
   case Search = "search";
   case UserGif = "user_gif";
-  case SetAvatar = "set_avatar";
   case GetMetadata = "get_metadata";
 }
 
@@ -66,11 +65,6 @@ class ScribbleController extends Scribble {
       "method" => RequestMethod::GET,
       "login_required" => false,
       "auth_levels" => array(AuthLevel::Beta)
-    ),
-    ScribbleAction::SetAvatar->value => array(
-      "method" => RequestMethod::PUT,
-      "login_required" => true,
-      "auth_levels" => array()
     ),
     ScribbleAction::GetMetadata->value => array(
       "method" => RequestMethod::GET,
@@ -170,11 +164,6 @@ class ScribbleController extends Scribble {
         break;
       case ScribbleAction::UserGif:
         return $this->userGif();
-        break;
-      case ScribbleAction::SetAvatar:
-        $id = $this->rest->getRequiredQueryField("id");
-        $username = $this->rest->getUsername();
-        return $this->setAvatar($id, $username);
         break;
       case ScribbleAction::GetMetadata:
         $id = $this->rest->getRequiredQueryField("id");
@@ -320,20 +309,6 @@ class ScribbleController extends Scribble {
     return "not implemented";
 
     $this->rest->setDataField("url", $url);
-    return "";
-  }
-
-  private function setAvatar($id, $username) {
-    $user = new User();
-    $err = $user->updateAvatar($id, $username);
-    if (!empty($err)) {
-      return "Error setting avatar. " . $err;
-    }
-
-    $scrib = new Scribble();
-    $scrib->readScribble($id);
-
-    $this->rest->setResponseField('scribble', $scrib->getScribble());
     return "";
   }
 }

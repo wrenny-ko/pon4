@@ -96,7 +96,7 @@ class Scribble extends DatabaseHandler {
     return "";
   }
 
-  protected function readScribble($id) {
+  public function readScribble($id) {
     $sql = <<<EOF
     SELECT users.username, scribbles.id, scribbles.likes, scribbles.dislikes, 
            scribbles.title, scribbles.data_url

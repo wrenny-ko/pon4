@@ -1,54 +1,71 @@
-async function populateLogs() {
-  const sp = new URLSearchParams(window.location.search);
-  const endpoint = sp.get('endpoint');
+export class Log {
+  name = 'log';
+  title = 'API Logs';
 
-  let endpointQuery = '';
-  if (endpoint) {
-    endpointQuery = '&endpoint=' + endpoint;
+  setup() {
+    this.populateLogs();
   }
 
-  const response = await fetch('api/log.php?action=read' + endpointQuery);
+  again() {
+    this.populateLogs();
+  }
 
-  if (response.status !== 200) {
-    //TODO show error on page
-    let txt = await response.text();
-    console.log(txt);
+  teardown() {
     return;
   }
 
-  const j = await response.json();
+  async populateLogs() {
+    const title = $('.endpoint-title')[0];
+    title.innerText = 'API Logs';
 
-  const ll = $('.log-box')[0];
-  for (const [i, line] of Object.entries(j.data.lines)) {
-    const lineEl = document.createElement('div');
-    lineEl.classList.add('log-line');
+    const sp = new URLSearchParams(window.location.search);
+    const endpoint = sp.get('endpoint');
 
-    arr = line.split(" | ");
-
-    const pre = document.createElement('div');
-    pre.classList.add('log-line-text');
-    pre.innerText = arr[0] + " | ";
-
-    const endpointName = document.createElement('a');
-    endpointName.classList.add('log-line-endpoint');
-    name = arr[1];
-    endpointName.innerText = name;
-    endpointName.href = 'log.php?endpoint=' + name;
-    if (endpoint === name) {
-      endpointName.classList.add('selected');
-      endpointName.href = 'log.php';
+    let endpointQuery = '';
+    if (endpoint) {
+      endpointQuery = '&endpoint=' + endpoint;
+      title.innerText += ' - ' + endpoint;
     }
 
-    const post = document.createElement('div');
-    post.classList.add('log-line-text');
-    post.innerText = " | " + arr.slice(2).join(" | ");
+    const response = await axios.get(
+      'api/log.php?action=read' + endpointQuery,
+    ).catch(err => {
+      console.log(err.response);
+      $('.log-box')[0].innerText = err.response.data.error;
+    });
 
-    lineEl.appendChild(pre);
-    lineEl.appendChild(endpointName);
-    lineEl.appendChild(post);
+    const ll = $('.log-box')[0];
+    ll.innerHTML = '';
+    for (const [i, line] of Object.entries(response.data.lines)) {
+      const lineEl = document.createElement('div');
+      lineEl.classList.add('log-line');
 
-    ll.appendChild(lineEl);
+      let arr = line.split(" | ");
+
+      const pre = document.createElement('div');
+      pre.classList.add('log-line-text');
+      pre.innerText = arr[0] + " | ";
+
+      const endpointName = document.createElement('a');
+      endpointName.classList.add('log-line-endpoint');
+      endpointName.classList.add('site-nav');
+      name = arr[1];
+      endpointName.innerText = name;
+      endpointName.href = '/log?endpoint=' + name;
+      if (endpoint === name) {
+        endpointName.classList.add('selected');
+        endpointName.href = 'log';
+      }
+
+      const post = document.createElement('div');
+      post.classList.add('log-line-text');
+      post.innerText = " | " + arr.slice(2).join(" | ");
+
+      lineEl.appendChild(pre);
+      lineEl.appendChild(endpointName);
+      lineEl.appendChild(post);
+
+      ll.appendChild(lineEl);
+    }
   }
 }
-
-populateLogs();

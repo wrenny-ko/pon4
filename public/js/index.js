@@ -2,6 +2,7 @@ import { Search } from './search.js';
 import { Scribble } from './scribble.js';
 import { Draw } from './new.js';
 import { Leaderboard } from './leaderboard.js';
+import { Log } from './log.js';
 import { User } from './user.js';
 import { Login } from './login.js';
 import { Signup } from './signup.js';
@@ -16,9 +17,9 @@ class App {
     this.pages['new'] = new Draw();
     this.pages['leaderboard'] = new Leaderboard();
     this.pages['user'] = new User();
-    //this.pages['log'] = new Log('log', 'API logs')
+    this.pages['log'] = new Log();
     this.pages['login'] = new Login();
-    this.pages['signup'] = new Signup()
+    this.pages['signup'] = new Signup();
   }
 
   run() {

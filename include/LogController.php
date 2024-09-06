@@ -93,7 +93,7 @@ class LogController {
       }
     }
 
-    $this->rest->setDataField("lines", $curated);
+    $this->rest->setResponseField("lines", $curated);
     return "";
   }
 }

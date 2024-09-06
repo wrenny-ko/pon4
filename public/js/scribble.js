@@ -136,7 +136,7 @@ export class Scribble {
       return;
     }
 
-    const response = await axios('api/scribble.php?action=set_avatar&id=' + id,
+    const response = await axios('api/account.php?action=set_avatar&id=' + id,
       {
         method: 'PUT'
       }).then( res => {
@@ -145,10 +145,6 @@ export class Scribble {
       .catch( error => {
         console.log(error.response); //TODO show error on page
       });
-
-    // trigger refresh
-    // TODO only refetch avatar instead
-    //location.href = "scribble.php?id=" + sc.id;
   }
 
   async deleteScribble() {

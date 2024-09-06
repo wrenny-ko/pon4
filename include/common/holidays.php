@@ -32,7 +32,7 @@
 ?>
 <div class="holidays-widget nav-entry">
   <a href="<?= $nextHoliday["link"]; ?>" class="feast">
-    <img src="shofar.png" class="icon" alt="shofar"/>
+    <img src="icon/shofar.png" class="icon" alt="shofar"/>
     <div class="holiday-info">
       <div class="holiday-title">
         <?= $nextHoliday["title"]; ?>

@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="css/scribble.css" type="text/css">
   <link rel="stylesheet" href="css/new.css" type="text/css">
   <link rel="stylesheet" href="css/leaderboard.css" type="text/css">
+  <link rel="stylesheet" href="css/log.css" type="text/css">
   <link rel="stylesheet" href="css/user.css" type="text/css">
   <link rel="stylesheet" href="css/login.css" type="text/css">
   <link rel="stylesheet" href="css/signup.css" type="text/css">
@@ -31,6 +32,9 @@
   </div>
   <div class="page hidden" id="leaderboard-page">
     <?php require_once "../include/page/leaderboard.php";?>
+  </div>
+  <div class="page hidden" id="log-page">
+    <?php require_once "../include/page/log.php";?>
   </div>
   <div class="page hidden" id="user-page">
     <?php require_once "../include/page/user.php";?>

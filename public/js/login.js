@@ -64,7 +64,7 @@ export class Login {
         'content-type': 'multipart/form-data'
       }
     }).then( (res) => {
-      window.location.pathname = '/user?username=' + username; // force refresh
+      window.location.href = '/user?username=' + username; // force refresh
     }).catch( (err) => {
       $('.login-error-box')[0].innerText = err.response.data.error;
     });
