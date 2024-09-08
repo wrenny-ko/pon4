@@ -12,6 +12,7 @@ enum ScribbleAction: string {
   case Search = "search";
   case UserGif = "user_gif";
   case GetMetadata = "get_metadata";
+  case Import = "import";
 }
 
 class ScribbleController extends Scribble {
@@ -70,6 +71,11 @@ class ScribbleController extends Scribble {
       "method" => RequestMethod::GET,
       "login_required" => false,
       "auth_levels" => array()
+    ),
+    ScribbleAction::Import->value => array(
+      "method" => RequestMethod::GET,
+      "login_required" => true,
+      "auth_levels" => array(AuthLevel::Beta)
     )
   );
 
@@ -174,6 +180,10 @@ class ScribbleController extends Scribble {
         $id = $this->rest->getRequiredQueryField("id");
         $username = $this->rest->getUsername();
         return $this->getMeta($id, $username);
+        break;
+      case ScribbleAction::Import:
+        $id = $this->rest->getRequiredQueryField("id");
+        return $this->getImport($id);
         break;
     }
     return "action not found";
@@ -315,5 +325,14 @@ class ScribbleController extends Scribble {
 
     $this->rest->setDataField("url", $url);
     return "";
+  }
+
+  private function getImport($id) {
+    $msg = $this->importScribble($id);
+    if (!!$msg) {
+      return "Error reading scribble. " . $msg;
+    }
+
+    $this->rest->setResponseField("data_url", $this->getDataURL());
   }
 }

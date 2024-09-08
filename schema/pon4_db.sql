@@ -66,7 +66,7 @@ CREATE TABLE `scribbles` (
   `likes` int(11) NOT NULL DEFAULT 0,
   `dislikes` int(11) NOT NULL DEFAULT 0,
   `title` varchar(30) NOT NULL,
-  `data_url` varchar(20000) NOT NULL,
+  `data_url` varchar(100000) NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `user_index` (`user`),
   FOREIGN KEY (`user`) REFERENCES `users` (`id`)

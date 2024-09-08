@@ -31,7 +31,7 @@
   margin-top: 20px;
 }
 
-.text-input {
+.new-text-input {
   width: 100%;
   margin: 8px 0;
   font-size: 1.5rem;
@@ -67,6 +67,25 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -70%);
+}
+
+.import-base-form {
+  display: flex;
+  width: 25%;
+  justify-content: space-between;
+}
+
+.input-import-id {
+  width: 25%;
+  text-align: center;
+}
+
+.import-button {
+  width: 70%;
+}
+
+.import-error {
+  color: red;
 }
 
 .spinner {

@@ -6,10 +6,12 @@
     <div class="leaderboard-tools">
         <form class="set-max-rows-form hidden">
           Set Max Rows
-          <input class="set-max-rows-input" type="text" name="max-rows" placeholder="10"/>
-          <button class="set-max-rows-button" type="button">Update</button>
+          <div class="set-max-rows-form-inner">
+            <input class="set-max-rows-input text-input" type="text" name="max-rows" placeholder="10"/>
+            <button class="set-max-rows-button button" type="button">Update</button>
+          </div>
         </form>
-        <button class="show-set-max-rows-form" type="button">Set Max Rows</button>
+        <button class="show-set-max-rows-form button" type="button">Set Max Rows</button>
     </div>
   <?php } ?>
   <div class="table-container">

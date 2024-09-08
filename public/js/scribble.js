@@ -4,7 +4,7 @@ export class Scribble {
 
   setup() {
     this.populateScribble();
-    
+
     const lb = $('.like-button');
     if (lb.length > 0) {
       lb[0].addEventListener('click', this.like);
@@ -32,9 +32,7 @@ export class Scribble {
       setAv[0].addEventListener('click', this.setAvatar);
     }
 
-    document.addEventListener('metasync', e => {
-      this.syncScribble();
-    });
+    document.addEventListener('metasync', this.syncScribble);
   }
 
   again() {
@@ -43,7 +41,7 @@ export class Scribble {
   }
 
   teardown() {
-    //document.removeEventListener('metasync', metasyncHandler);
+    document.removeEventListener('metasync', this.syncScribble);
     $('.scribble-image')[0].src = '';
     $('.scribble-author')[0].innerHTML = '';
     $('.scribble-title')[0].innerText = '';

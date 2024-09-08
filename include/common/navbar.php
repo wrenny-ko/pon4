@@ -53,6 +53,9 @@
         <img class="avatar" src="<?= $avatar["data_url"];?>" icon/>
         <?= ($username !== "anonymous") ? $username : "Login";?>
       </a>
+      <?php if ($perms->hasBeta()) { ?>
+        <div class="hidden" id="role-beta"></div>
+      <?php } ?>
     </div>
   </div>
 </div>

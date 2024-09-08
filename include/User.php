@@ -22,7 +22,7 @@ class User extends DatabaseHandler {
     $sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
     $statement;
     try {
-      $statement = $pdo->prepare($sql);
+      $statement = $this->pdo->prepare($sql);
 
       $escaped_username = htmlspecialchars($username);
       $hashed = $this->saltAndHash($password);
@@ -43,7 +43,7 @@ class User extends DatabaseHandler {
     $sql = "SELECT * FROM users WHERE username = ?";
     $statement;
     try {
-      $statement = $pdo->prepare($sql);
+      $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($username)) ) {
         return "Database check failed.";
@@ -64,7 +64,7 @@ class User extends DatabaseHandler {
     $sql = "SELECT * FROM users WHERE username = ? OR email = ?";
     $statement;
     try {
-      $statement = $pdo->prepare($sql);
+      $statement = $this->pdo->prepare($sql);
 
       $error = "";
       if ( !$statement->execute(array($username, $email)) ) {
@@ -86,7 +86,7 @@ class User extends DatabaseHandler {
     $sql = "SELECT password FROM users WHERE username = ?";
     $statement;
     try {
-      $statement = $pdo->prepare($sql);
+      $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($username)) ) {
         return "Database error.";

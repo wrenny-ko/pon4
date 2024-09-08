@@ -4,7 +4,8 @@ COPY .env /var/www/.env
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get upgrade -y; apt-get install -y \
-    apache2 php8.3 php8.3-mysql libapache2-mod-php8.3 php-mysql curl
+    apache2 php8.3 php8.3-mysql libapache2-mod-php8.3 \
+    php-mysql php-gd curl
 
 # php and apache settings
 RUN <<EOF

@@ -5,16 +5,50 @@ export class Draw {
 
   async setup() {
     $('.submit-button')[0].setAttribute('disabled', '');
+
+    // beta test, backend requires auth
+    if ($('#role-beta').length) {
+      $('.import-button')[0].setAttribute('disabled', '');
+      $('.input-import-id')[0].value = '';
+
+      $('.import-button')[0].addEventListener('click', this.importBase);
+      $('.input-import-id')[0].addEventListener('keyup', this.validateID);
+
+      const imer = $('.import-error')[0];
+      imer.classList.add('hidden');
+      imer.innerText = '';
+    }
+
     this.scribble();
   }
 
   async again() {
     this.teardown();
     $('.submit-button')[0].setAttribute('disabled', '');
+
+    // beta test, backend requires auth
+    if ($('#role-beta').length) {
+      $('.import-button')[0].setAttribute('disabled', '');
+      $('.input-import-id')[0].value = '';
+
+      $('.import-button')[0].addEventListener('click', this.importBase);
+      $('.input-import-id')[0].addEventListener('keyup', this.validateID);
+
+      const imer = $('.import-error')[0];
+      imer.classList.add('hidden');
+      imer.innerText = '';
+    }
+
     this.scribble();
   }
 
   teardown() {
+    // beta test, backend requires auth
+    if ($('#role-beta').length) {
+      $('.import-button')[0].removeEventListener('click', this.importBase);
+      $('.input-import-id')[0].removeEventListener('keyup', this.validateID);
+    }
+
     let ctm = $('.close-title-modal')[0];
     let ev = document.createEvent("HTMLEvents");
     ev.initEvent("click", true, true);
@@ -39,6 +73,7 @@ export class Draw {
     let offset = {x: 0, y: 0};
 
     let drawing = false;
+    let entered = false;
     let strokes = [];
 
     // keeps canvas aligned
@@ -63,7 +98,7 @@ export class Draw {
 
     // draw on canvas if drawing flag and if mouse button is still down
     function mouseMove(e) {
-      if (e.button !== 0 || !drawing) {
+      if (e.button !== 0 || !drawing || !entered) {
         return;
       }
 
@@ -82,6 +117,16 @@ export class Draw {
 
     // set position for drawing when cursor enters the canvas
     function mouseEnter(e) {
+      entered = true;
+      position = {
+        x: e.clientX + offset.x,
+        y: e.clientY + offset.y,
+      }
+    }
+
+    // set position for drawing when cursor enters the canvas
+    function mouseLeave(e) {
+      entered = false;
       position = {
         x: e.clientX + offset.x,
         y: e.clientY + offset.y,
@@ -113,9 +158,10 @@ export class Draw {
     document.addEventListener('mousedown', mouseDown);
     document.addEventListener('mouseup', stopDrawing);
     document.addEventListener('mousemove', mouseMove);
-    document.addEventListener('mouseenter', mouseEnter);
+    c.addEventListener('mouseenter', mouseEnter);
+    c.addEventListener('mouseleave', mouseLeave);
 
-    let reset = document.getElementsByClassName('clear-canvas-button')[0];
+    let reset = $('.clear-canvas-button')[0];
     reset.addEventListener('click', clearCanvas);
 
     // show the spinner and disable the main buttons
@@ -250,5 +296,46 @@ export class Draw {
       const ctm = $('.close-title-modal')[0];
       ctm.addEventListener('click', close);
     }
+  }
+
+  validateID() {
+    const button = $('.import-button')[0];
+
+    const id = $('.input-import-id')[0].value;
+    // test if positive integer
+    if ( /^[+]?\d+$/.test(id) ) {
+      button.removeAttribute('disabled')
+    } else {
+      button.setAttribute('disabled', '');
+    }
+  }
+
+  importBase(e) {
+    e.preventDefault();
+
+    const imer = $('.import-error')[0];
+    imer.classList.add('hidden');
+    imer.innerText = '';
+
+    const id = $('.input-import-id')[0].value;
+    axios.get('api/scribble.php?action=import&id=' + id)
+      .then( res => {
+        //const durl = 'url("' + res.data.data_url + '")';
+        //$('.pad')[0].style.setProperty('background-image', durl);
+
+        const ctx = $('.pad')[0].getContext('2d');
+        const img = new Image;
+        img.onload = function(){
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = res.data.data_url;
+      })
+      .catch( err => {
+        const imer = $('.import-error')[0];
+        imer.classList.remove('hidden');
+        imer.innerText = err.response.data.error;
+      });
+
+    return false;
   }
 }

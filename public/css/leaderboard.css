@@ -20,6 +20,11 @@
 .leaderboard-tools {
   height: 50px;
   display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-right: auto;
+  width: 100%;
 }
 
 .table-container {
@@ -90,4 +95,31 @@ th {
   text-decoration: none;
   font-size: 1rem;
   color: #813d9c;
+}
+
+.set-max-rows-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+
+.set-max-rows-input {
+  width: 20%;
+}
+
+.set-max-rows-button {
+  width: 20%;
+}
+
+.show-set-max-rows-form {
+  width: 20%;
+}
+
+.set-max-rows-form-inner {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }

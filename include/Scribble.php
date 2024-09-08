@@ -591,6 +591,100 @@ EOF;
     }
   }
 
+  protected function importScribble($id) {
+    $sql = "SELECT data_url FROM scribbles WHERE scribbles.id = ?";
+
+    $statement;
+    try {
+      $statement = $this->pdo->prepare($sql);
+      if ( !$statement->execute(array($id)) ) {
+        return "Database lookup failed.";
+      }
+
+      if ($statement->rowCount() === 0) {
+        return "Scribble does not exist.";
+      }
+
+      $row = $statement->fetch();
+      $this->data_url = htmlspecialchars_decode($row['data_url']);
+    } catch (PDOException $e) {
+        return "Database execute error.";
+    }
+
+    $this->processForImport();
+
+    $statement = null;
+    return "";
+  }
+
+  private function calcGrey($r, $g, $b) {
+    return ($r * 0.299) + ($g * 0.587) + ($b * 0.114);
+  }
+
+  private function calcAvg($r, $g, $b) {
+    return (min($r, $g, $b) + max($r, $g, $b)) / 0.5;
+  }
+
+  // recolors (fades)
+  private function processForImport() {
+    try {
+      $url = substr($this->data_url, 22); // strip out "data:image/png;base64,"
+      str_replace(' ', '+', $url);
+      $data = base64_decode($url);
+
+      $rand = bin2hex(random_bytes(8));
+      $tmpFilename = "/var/www/tmp/" . $rand . ".png";
+      file_put_contents($tmpFilename, $data);
+
+      $img = imagecreatefrompng($tmpFilename);
+      imagealphablending($img, true);
+      imagesavealpha($img, true);
+
+      $w = imagesx($img);
+      $h = imagesy($img);
+
+      for ($i = 0; $i < $h; $i++) {
+        //$offset = $w * $i;
+        for ($j = 0; $j < $w; $j++) {
+          $pixel = imagecolorat($img, $i, $j);
+          // saturate a bit
+
+          $r = ($pixel & 0x000000ff);
+          $g = ($pixel & 0x0000ff00) >> 8;
+          $b = ($pixel & 0x00ff0000) >> 16;
+          $a = ($pixel & 0xff000000) >> 24;
+
+          $grey = $this->calcAvg($r, $g, $b);
+          if (abs($grey) <= 1E-9) {
+            continue; // skip for blank pixels
+          }
+
+          $mod = $grey * 0.1;
+          $r = floor( $r * $mod ) & 0xff;
+          $g = floor( $g * $mod ) & 0xff;
+          $b = floor( $b * $mod ) & 0xff;;
+          //$g = floor( ($grey * $mod * $g) / 255);
+          //$b = floor( ($grey * $mod * $b) / 255) & 0xff;
+
+          $color = imagecolorallocatealpha($img, $r, $g, $b, $a);
+          imagesetpixel($img, $i, $j, $color);
+          //$pixel = $r & ($g << 8) & ($b << 16) & ($a << 24);
+          //imagecolorset($img, $pixel, $r, $g, $b, $a);
+          //echo "inside loop";
+        }
+        
+      }
+
+      //imagefill($img, 0, 0, imagecolorallocate($img, 0, 127, 127));
+      imagepng($img, "/var/www/tmp/" . $rand . "_mod.png");
+      
+      $encoded = base64_encode(file_get_contents("/var/www/tmp/" . $rand . "_mod.png"));
+      $this->data_url = "data:image/png;base64," . $encoded;
+    } catch (Exception $e) {
+      return "Error converting image for import. " . $e;
+    }
+  }
+
   protected function comment($id, $username, $msg) {
     //TODO
     return "Not implemented";
