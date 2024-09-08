@@ -44,10 +44,10 @@ class Rest {
   private array $auths;
   private string $logFilename;
   private RestLogEntry $logEntry;
-  private Perms $perms;
   private array $data;
   private array $responseFields;
   private int $successCode;
+  private $perms;
 
   // Construct this after calling session_start()
   public function __construct() {
@@ -57,6 +57,7 @@ class Rest {
     $this->data = array();
     $this->responseFields = array();
     $this->successCode = 200;
+    $this->perms = null;
   }
 
   public function setMethod($method) {
@@ -152,6 +153,10 @@ class Rest {
   }
 
   public function error($msg) {
+    if (!!$this->perms) {
+      $this->perms->disconnect();
+    }
+
     http_response_code(400);
 
     $this->logEntry->setSuccess("FAILED");
@@ -162,6 +167,10 @@ class Rest {
   }
 
   public function success($msg) {
+    if (!!$this->perms) {
+      $this->perms->disconnect();
+    }
+
     http_response_code($this->successCode);
 
     $this->logEntry->setSuccess("SUCCESS");

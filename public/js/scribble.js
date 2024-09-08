@@ -37,6 +37,11 @@ export class Scribble {
     });
   }
 
+  again() {
+    this.teardown();
+    this.setup();
+  }
+
   teardown() {
     //document.removeEventListener('metasync', metasyncHandler);
     $('.scribble-image')[0].src = '';
@@ -56,31 +61,31 @@ export class Scribble {
       id = 1;
     }
 
-    const response = await axios.get(
-      'api/scribble.php?action=get&id=' + id
-    ).catch(error => {
+    axios.get('api/scribble.php?action=get&id=' + id)
+    .then( response => {
+      const scribble = response.data.scribble;
+
+      const si = $('.scribble-image')[0];
+      si.src = scribble.data_url;
+
+      const sa = $('.scribble-author')[0];
+      sa.innerHTML = scribble.username;
+      sa.href = "user?username=" + scribble.username;//TODO SPA this
+
+      const st = $('.scribble-title')[0];
+
+      // crude text wrap
+      let title = scribble.title;
+      if (title.length > 15) {
+        title = title.substr(0, 14) + "\n" + title.substr(15);
+      }
+      st.innerText = title;
+
+      this.syncScribble();
+    })
+    .catch( error => {
       console.log(error.response);  //TODO show error on page
     });
-
-    const scribble = response.data.scribble;
-
-    const si = $('.scribble-image')[0];
-    si.src = scribble.data_url;
-
-    const sa = $('.scribble-author')[0];
-    sa.innerHTML = scribble.username;
-    sa.href = "user?username=" + scribble.username;//TODO SPA this
-
-    const st = $('.scribble-title')[0];
-
-    // crude text wrap
-    let title = scribble.title;
-    if (title.length > 15) {
-      title = title.substr(0, 14) + "\n" + title.substr(15);
-    }
-    st.innerText = title;
-
-    this.syncScribble();
   }
 
   async syncScribble() {
@@ -92,40 +97,40 @@ export class Scribble {
       id = 1;
     }
 
-    const response = await axios.get(
-      'api/scribble.php?action=get_metadata&id=' + id
-    ).catch(error => {
-      console.log(error.response);  //TODO show error on page
-    });
+    axios.get('api/scribble.php?action=get_metadata&id=' + id)
+      .then( response => {
+        const meta = response.data.metadata;
 
-    const meta = response.data.metadata;
+        const likes = $('.likes')[0];
+        likes.innerText = meta.likes + " Likes";
+        if (meta.user_data.liked) {
+          likes.classList.add('liked');
+        } else {
+          likes.classList.remove('liked');
+        }
 
-    const likes = $('.likes')[0];
-    likes.innerText = meta.likes + " Likes";
-    if (meta.user_data.liked) {
-      likes.classList.add('liked');
-    } else {
-      likes.classList.remove('liked');
-    }
+        const dislikes = $('.dislikes')[0];
+        dislikes.innerText = meta.dislikes + " Dislikes";
+        if (meta.user_data.disliked) {
+          dislikes.classList.add('disliked');
+        } else {
+          dislikes.classList.remove('disliked');
+        }
 
-    const dislikes = $('.dislikes')[0];
-    dislikes.innerText = meta.dislikes + " Dislikes";
-    if (meta.user_data.disliked) {
-      dislikes.classList.add('disliked');
-    } else {
-      dislikes.classList.remove('disliked');
-    }
-
-    const ratio = +meta.likes - (+meta.dislikes);
-    const r = $('.ratio').first();
-    r.text("Ratio: " + ratio.toString());
-    if (ratio > 0) {
-      r.css('color', '#26a269');
-    } else if (ratio < 0) {
-      r.css('color', '#e80d0d');
-    } else {
-      r.css('color', '#e66100');
-    }
+        const ratio = +meta.likes - (+meta.dislikes);
+        const r = $('.ratio').first();
+        r.text("Ratio: " + ratio.toString());
+        if (ratio > 0) {
+          r.css('color', '#26a269');
+        } else if (ratio < 0) {
+          r.css('color', '#e80d0d');
+        } else {
+          r.css('color', '#e66100');
+        }
+      })
+      .catch(error => {
+        console.log(error.response);  //TODO show error on page
+      });
   }
 
   async setAvatar() {
@@ -136,7 +141,7 @@ export class Scribble {
       return;
     }
 
-    const response = await axios('api/account.php?action=set_avatar&id=' + id,
+    axios('api/account.php?action=set_avatar&id=' + id,
       {
         method: 'PUT'
       }).then( res => {
@@ -155,17 +160,18 @@ export class Scribble {
       return;
     }
 
-    const response = await axios.delete("api/scribble.php?action=delete&id=" + id)
+    axios.delete("api/scribble.php?action=delete&id=" + id)
+      .then( reponse => {
+        history.pushState( {} , 'Pon 4', '/index');
+        let ev = document.createEvent("HTMLEvents");
+        ev.initEvent("approute", true, true);
+        ev.eventName = "approute";
+        document.dispatchEvent(ev);
+      })
       .catch( error => {
         console.log(error.response); //TODO show error on page
       }
     );
-
-    history.pushState( {} , 'Pon 4', '/index');
-    let ev = document.createEvent("HTMLEvents");
-    ev.initEvent("approute", true, true);
-    ev.eventName = "approute";
-    document.dispatchEvent(ev);
   }
 
   async like() {

@@ -23,9 +23,6 @@ class LeaderboardController extends Leaderboard {
   private $action;
 
   public function __construct() {
-    $this->readMaxRows();
-    $this->readNumTotalEntries();
-
     // set up first for logging/error response if needed
     $this->rest = new Rest();
     $this->rest->setupLogging("api.log", "leaderboard");
@@ -60,6 +57,14 @@ class LeaderboardController extends Leaderboard {
 
     $this->rest->compareMethod(self::RouteMap[$action->value]["method"] );
     $this->rest->auth();
+
+    $err = $this->connect();
+    if (!!$err) {
+      return "Database connect error. " . $err;
+    }
+
+    $this->readMaxRows();
+    $this->readNumTotalEntries();
   }
 
   public function handle() {

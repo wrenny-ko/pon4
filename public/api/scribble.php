@@ -1,5 +1,5 @@
 <?php
-  header("Access-Control-Allow-Methods: GET, PUT, DELETE");
+  header("Access-Control-Allow-Methods: DELETE, GET, POST, PUT");
 
   require_once "../../include/common/includes.php";
 
@@ -10,3 +10,11 @@
 
   $ctrl = new ScribbleController();
   $ctrl->handle();
+
+/*
+  // TODO refactor Rest.php to not call exit()
+  $ctrl->disconnect();
+  $ctrl = null;
+
+  require_once "../../include/common/cleanup.php";
+*/

@@ -33,9 +33,11 @@
   <div class="page hidden" id="leaderboard-page">
     <?php require_once "../include/page/leaderboard.php";?>
   </div>
-  <div class="page hidden" id="log-page">
-    <?php require_once "../include/page/log.php";?>
-  </div>
+  <?php if ($perms->hasTech() || $perms->hasAdmin()) { ?>
+    <div class="page hidden" id="log-page">
+      <?php require_once "../include/page/log.php";?>
+    </div>
+  <?php } ?>
   <div class="page hidden" id="user-page">
     <?php require_once "../include/page/user.php";?>
   </div>

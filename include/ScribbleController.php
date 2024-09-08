@@ -110,6 +110,11 @@ class ScribbleController extends Scribble {
 
     $this->rest->compareMethod(self::RouteMap[$action->value]["method"] );
     $this->rest->auth();
+
+    $err = $this->connect();
+    if (!!$err) {
+      return "Database connect error. " . $err;
+    }
   }
 
   public function handle() {

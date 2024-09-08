@@ -17,18 +17,19 @@ class Perms extends DatabaseHandler {
     $this->roles["moderator"]   = false;
     $this->roles["tech"]  = false;
     $this->roles["beta"]  = false;
+
+    $err = $this->connect();
+    if (!!$err) {
+      return "Database connect error. " . $err;
+    }
+
     $this->readPerms();
   }
 
   protected function readPerms() {
     $sql = "SELECT * FROM perms INNER JOIN users ON users.username = ? AND perms.user = users.id";
-    $pdo = $this->connect();
-    if (!$pdo) {
-      return "Database connect error.";
-    }
-
     try {
-      $statement = $pdo->prepare($sql);
+      $statement = $this->pdo->prepare($sql);
       if ( !$statement->execute(array($this->username)) ) {
         return "Database lookup failed.";
       }
@@ -72,13 +73,8 @@ class Perms extends DatabaseHandler {
   protected function writeLevel($username, AuthLevel $level, $has) {
     // first test for existence of a perms entry
     $sql = "SELECT * FROM perms INNER JOIN users ON users.username = ? AND perms.user = users.id";
-    $pdo = $this->connect();
-    if (!$pdo) {
-      return "Database connect error.";
-    }
-
     try {
-      $statement = $pdo->prepare($sql);
+      $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($this->username)) ) {
         return "Database lookup failed.";
@@ -96,7 +92,7 @@ class Perms extends DatabaseHandler {
         $values = array($level->value, $has, $username);
       }
 
-      $statement = $pdo->prepare($sql);
+      $statement = $this->pdo->prepare($sql);
       if ( !$statement->execute(array($this->username)) ) {
         return "Database store failed.";
       }
@@ -111,13 +107,8 @@ class Perms extends DatabaseHandler {
   // remove all perms from a user
   protected function wipeAuths($username) {
     $sql = "DELETE FROM perms JOIN users WHERE users.username = ? AND perms.user = users.id";
-    $pdo = $this->connect();
-    if (!$pdo) {
-      return "Database connect error.";
-    }
-
     try {
-      $statement = $pdo->prepare($sql);
+      $statement = $this->pdo->prepare($sql);
       if ( !$statement->execute(array($this->username)) ) {
         return "Database store failed.";
       }

@@ -9,3 +9,11 @@
 
   $ctrl = new AccountController();
   $ctrl->handle();
+
+/*
+  // TODO refactor Rest.php to not call exit()
+  $ctrl->disconnect();
+  $ctrl = null;
+
+  require_once "../../include/common/cleanup.php";
+*/

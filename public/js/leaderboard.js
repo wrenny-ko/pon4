@@ -3,9 +3,38 @@ export class Leaderboard {
   static title = "Leaderboard";
   once = false;
 
+  setup() {
+    if ($('.show-set-max-rows-form').length) {
+      $('.set-max-rows-button')[0].addEventListener('click', this.handleSetMaxRows);
+      $('.show-set-max-rows-form')[0].addEventListener('click', this.showSetMaxRows);
+    }
+    this.runTable();
+  }
+
+  again() {
+    return;
+  }
+
+  teardown() {
+    if ($('.show-set-max-rows-form').length) {
+      $('.set-max-rows-button')[0].removeEventListener('click', this.handleSetMaxRows);
+      $('.show-set-max-rows-form')[0].removeEventListener('click', this.showSetMaxRows);
+      this.hideSetMaxRows();
+    }
+  }
+
+  showSetMaxRows() {
+    $('.set-max-rows-form')[0].classList.remove('hidden');
+    $('.show-set-max-rows-form')[0].classList.add('hidden');
+  }
+
+  hideSetMaxRows() {
+    $('.set-max-rows-form')[0].classList.add('hidden');
+    $('.show-set-max-rows-form')[0].classList.remove('hidden');
+  }
+
   async handleSetMaxRows() {
     const val = $('.set-max-rows-input')[0].value;
-    console.log(val);
     const response = await axios.put(
       'api/leaderboard.php?action=set_max_rows&max_rows=' + val,
       {
@@ -125,35 +154,5 @@ export class Leaderboard {
     });
 
     $.fn.dataTable.ext.errMode = 'none'; //prevents the alert() calls
-  }
-
-  showSetMaxRows() {
-    $('.set-max-rows-form')[0].classList.remove('hidden');
-    $('.show-set-max-rows-form')[0].classList.add('hidden');
-  }
-
-  hideSetMaxRows() {
-    $('.set-max-rows-form')[0].classList.add('hidden');
-    $('.show-set-max-rows-form')[0].classList.remove('hidden');
-  }
-
-  setup() {
-    if ($('.show-set-max-rows-form').length) {
-      $('.set-max-rows-button')[0].addEventListener('click', this.handleSetMaxRows);
-      $('.show-set-max-rows-form')[0].addEventListener('click', this.showSetMaxRows);
-    }
-    this.runTable();
-  }
-
-  again() {
-    return;
-  }
-
-  teardown() {
-    if ($('.show-set-max-rows-form').length) {
-      $('.set-max-rows-button')[0].removeEventListener('click', this.handleSetMaxRows);
-      $('.show-set-max-rows-form')[0].removeEventListener('click', this.showSetMaxRows);
-      this.hideSetMaxRows();
-    }
   }
 }

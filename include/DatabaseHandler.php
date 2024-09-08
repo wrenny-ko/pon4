@@ -1,10 +1,11 @@
 <?php
+
 class DatabaseHandler {
   private $hostname = "db";
   private $username;
   private $password;
   private $dbname;
-  //private $pdo;
+  protected $pdo;
 
   private function loadIni() {
     $env = parse_ini_file($_SERVER["DOCUMENT_ROOT"] . '/../.env');
@@ -14,41 +15,22 @@ class DatabaseHandler {
     $this->dbname   = $env["DB_NAME"];
   }
 
-  public function connect() {
+  protected function connect() {
     $this->loadIni();
+
+    $pdo;
     try {
       $dsn = 'mysql:host=' . $this->hostname . ';dbname=' . $this->dbname;
       $pdo = new PDO($dsn, $this->username, $this->password);
       $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+      $this->pdo = $pdo;
     } catch(PDOException $e) {
-      return null;
+      return "PDO error.";
     }
-    return $pdo; //legacy support
+    return "";
+  }
+
+  public function disconnect() {
+    $this->pdo = null;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

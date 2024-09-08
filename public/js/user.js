@@ -45,13 +45,13 @@ export class User {
   }
 
   async postLogout() {
-    axios.post(
-      'api/account.php?action=logout'
-    ).then( res => {
-      window.location.href = '/index'; // force page reload
-    }).catch(err => {
-      console.log(err.response);
-    });
+    axios.post('api/account.php?action=logout')
+      .then( res => {
+        window.location.href = '/index'; // force page reload
+      })
+      .catch( err => {
+        console.log(err.response);
+      });
   }
 
   async runSearch() {

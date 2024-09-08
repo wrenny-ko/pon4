@@ -7,6 +7,9 @@
   $sc = new Scribble();
   $sc->readScribbleAvatar($username); // $username defined in include/common/includes.php
   $avatar = $sc->getScribble();
+
+  $sc->disconnect();
+  $sc = null;
 ?>
 <div class="navbar">
   <div class="nav-left">

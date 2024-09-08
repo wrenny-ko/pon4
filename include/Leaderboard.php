@@ -22,6 +22,11 @@ class Leaderboard extends DatabaseHandler {
   protected $board;
 
   public function __construct() {
+    $err = $this->connect();
+    if (!!$err) {
+      return "Database connect error. " . $err;
+    }
+
     $this->readMaxRows();
     $this->readNumTotalEntries();
   }
@@ -36,14 +41,10 @@ class Leaderboard extends DatabaseHandler {
 
   protected function readMaxRows() {
     $sql = "SELECT max_rows FROM leaderboard";
-    $pdo = $this->connect();
-    if (!$pdo) {
-      return "Database connect error.";
-    }
 
     $statement;
     try {
-      $statement = $pdo->query($sql);
+      $statement = $this->pdo->query($sql);
     } catch (PDOException $e) {
       return "Database query error.";
     }
@@ -56,14 +57,10 @@ class Leaderboard extends DatabaseHandler {
 
   protected function writeMaxRows($num) {
     $sql = "UPDATE leaderboard SET max_rows = ? WHERE id = 1";
-    $pdo = $this->connect();
-    if (!$pdo) {
-      return "Database connect error.";
-    }
 
     $statement;
     try {
-      $statement = $pdo->prepare($sql);
+      $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($num)) ) {
         return "Database update failed.";
@@ -78,13 +75,9 @@ class Leaderboard extends DatabaseHandler {
 
   protected function readNumTotalEntries() {
     $sql = "SELECT COUNT(*) FROM users";
-    $pdo = $this->connect();
-    if (!$pdo) {
-      return "Database connect error.";
-    }
 
     try {
-      $statement = $pdo->query($sql);
+      $statement = $this->pdo->query($sql);
 
       $this->numTotalEntries = $statement->fetchColumn();
     } catch (PDOException $e) {
@@ -101,14 +94,10 @@ class Leaderboard extends DatabaseHandler {
     //   sort by sortcol in sortdir, truncate by max numrows
     //   set class variable
     $sql = "SELECT * FROM users";
-    $pdo = $this->connect();
-    if (!$pdo) {
-      return "Database connect error.";
-    }
 
     $statement;
     try {
-      $statement = $pdo->prepare($sql);
+      $statement = $this->pdo->prepare($sql);
       if ( !$statement->execute(array()) ) {
         return "Database lookup failed.";
       }
@@ -125,7 +114,7 @@ class Leaderboard extends DatabaseHandler {
       // find how many scribbles the given user created
       $sql = "SELECT COUNT(*) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
       try {
-        $statement = $pdo->prepare($sql);
+        $statement = $this->pdo->prepare($sql);
         if ( !$statement->execute(array($stats["username"])) ) {
           return "Database lookup failed.";
         }
@@ -139,7 +128,7 @@ class Leaderboard extends DatabaseHandler {
           JOIN users AS everyone
           WHERE scribbles.user = uploaders.id AND scribbles.id = everyone.avatar
 EOF;
-        $statement = $pdo->prepare($sql);
+        $statement = $this->pdo->prepare($sql);
         if ( !$statement->execute(array($stats["username"])) ) {
           return "Database lookup failed.";
         }
@@ -148,7 +137,7 @@ EOF;
 
         // find how many total likes the given user has
         $sql = "SELECT SUM(likes) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
-        $statement = $pdo->prepare($sql);
+        $statement = $this->pdo->prepare($sql);
         if ( !$statement->execute(array($stats["username"])) ) {
           return "Database lookup failed.";
         }
@@ -158,7 +147,7 @@ EOF;
 
         // find how many total dislikes the given user has
         $sql = "SELECT SUM(dislikes) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
-        $statement = $pdo->prepare($sql);
+        $statement = $this->pdo->prepare($sql);
         if ( !$statement->execute(array($stats["username"])) ) {
           return "Database lookup failed.";
         }

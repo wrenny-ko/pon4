@@ -9,6 +9,8 @@ require_once $prefix . "../include/DatabaseHandler.php";
 require_once $prefix . "../include/Perms.php";
 require_once $prefix . "../include/Scribble.php"; // for navbar avatar
 
+$prefix = null;
+
 $username = "anonymous";
 if (isset($_SESSION['username'])) {
   $username = $_SESSION['username'];

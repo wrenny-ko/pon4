@@ -1,18 +1,21 @@
 export class Draw {
   static pageName = 'index';
   static title = "Search scribbles";
+  once = false;
 
   async setup() {
+    $('.submit-button')[0].setAttribute('disabled', '');
     this.scribble();
   }
 
   async again() {
     this.teardown();
+    $('.submit-button')[0].setAttribute('disabled', '');
     this.scribble();
   }
 
   teardown() {
-    let ctm = document.getElementsByClassName('close-title-modal')[0];
+    let ctm = $('.close-title-modal')[0];
     let ev = document.createEvent("HTMLEvents");
     ev.initEvent("click", true, true);
     ev.eventName = "click";
@@ -20,8 +23,16 @@ export class Draw {
     return;
   }
 
+  setupListeners() {
+    if (this.once) {
+      return;
+    }
+
+    this.once = true;
+  }
+
   scribble() {
-    const c = document.getElementsByClassName('pad')[0];
+    const c = $('.pad')[0];
     const ctx = c.getContext('2d');
 
     let position = {x: 0, y: 0};
@@ -66,7 +77,7 @@ export class Draw {
       ctx.lineTo(position.x, position.y);
       ctx.stroke();
 
-      document.querySelector('.submit-button').removeAttribute('disabled');
+      $('.submit-button')[0].removeAttribute('disabled');
     }
 
     // set position for drawing when cursor enters the canvas
@@ -92,10 +103,10 @@ export class Draw {
 
 
   function clearCanvas(e) {
-    const c = document.getElementsByClassName('pad')[0];
+    const c = $('.pad')[0];
     const ctx = c.getContext('2d');
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    document.querySelector('.submit-button').setAttribute('disabled', '');
+    $('.submit-button')[0].setAttribute('disabled', '');
   }
 
     document.addEventListener('resize', resize);
@@ -109,26 +120,29 @@ export class Draw {
 
     // show the spinner and disable the main buttons
     function disable() {
-      document.querySelector('.spinner').classList.remove('hidden');
-      document.querySelector('.submit-button').setAttribute('disabled', '');
-      document.querySelector('.clear-canvas-button').setAttribute('disabled', '');
+      $('.spinner')[0].classList.remove('hidden');
+      $('.submit-button')[0].setAttribute('disabled', '');
+      $('.clear-canvas-button')[0].setAttribute('disabled', '');
     }
 
     // hide the spinner and allow the buttons to be pressed again
     function enable() {
-      document.querySelector('.spinner').classList.add('hidden');
-      document.querySelector('.submit-button').removeAttribute('disabled');
-      document.querySelector('.clear-canvas-button').removeAttribute('disabled');
+      $('.spinner')[0].classList.add('hidden');
+      if (!isBlank()) {
+        $('.submit-button')[0].removeAttribute('disabled');
+      }
+      $('.clear-canvas-button')[0].removeAttribute('disabled');
     }
 
     function setErrorMsg(msg) {
-      document.querySelector('.error').classList.remove('hidden');
-      document.querySelector('.error').innerHTML = msg;
+      const errorEl = $('.error')[0];
+      errorEl.classList.remove('hidden');
+      errorEl.innerHTML = msg;
     }
 
     function drawThumb() {
       const base64URL = ctx.canvas.toDataURL();
-      const t = document.getElementsByClassName('thumb')[0];
+      const t = $('.thumb')[0];
       t.src = base64URL;
     }
 
@@ -146,17 +160,17 @@ export class Draw {
     }
 
     function clearTitleInput() {
-      const t = document.getElementsByClassName('input-title')[0];
+      const t = $('.input-title')[0];
       t.value = '';
     }
 
     function disablePostButton() {
-      const tb = document.getElementsByClassName('title-button')[0];
+      const tb = $('.title-button')[0];
       tb.setAttribute('disabled', 'true');
     }
 
     function enablePostButton() {
-      const tb = document.getElementsByClassName('title-button')[0];
+      const tb = $('.title-button')[0];
       tb.removeAttribute('disabled');
     }
 
@@ -165,7 +179,7 @@ export class Draw {
       clearTitleInput();
       hideTitleModal();
       if (isBlank()) {
-        document.querySelector('.submit-button').setAttribute('disabled', '');
+        $('.submit-button')[0].setAttribute('disabled', '');
       }
     }
 
@@ -188,7 +202,9 @@ export class Draw {
     }
 
     async function post(e) {
-      const t = document.getElementsByClassName('input-title')[0];
+      e.preventDefault();
+
+      const t = $('.input-title')[0];
       if (t.value === '') {
         return;
       }
@@ -202,37 +218,37 @@ export class Draw {
       })
       formData.append('scribble', scribble)
 
-      const response = await fetch('api/scribble.php?action=upload', {
-        method: 'POST',
-        body: formData,
+      await axios.post('api/scribble.php?action=upload', formData, {
+        headers: {
+          'content-type': 'multipart/form-data'
+        }
+      })
+      .then( res => {
+        // navigate to the new scribble's page
+        history.pushState( {} , 'Pon 4', '/scribble?id=' + res.data.data.id);
+        let ev = document.createEvent("HTMLEvents");
+        ev.initEvent("approute", true, true);
+        ev.eventName = "approute";
+        e.srcElement.dispatchEvent(ev);
+      }).catch( err => {
+        setErrorMsg('Error: ' + err.response.data.error); // show error message
+        enable(); // hide the spinner and allow the buttons to be pressed again
       });
 
-      const res = await response.json();
-      if (response.status !== 201) {
-        // show error message
-        setErrorMsg('Error: ' + res.error);
-
-        // hide the spinner and allow the buttons to be pressed again
-        enable();
-        return false;
-      }
-
-      history.pushState( {} , 'Pon 4', '/scribble?id=' + res.data.id);
-      let ev = document.createEvent("HTMLEvents");
-      ev.initEvent("approute", true, true);
-      ev.eventName = "approute";
-      e.srcElement.dispatchEvent(ev);
-      e.preventDefault();
       return false; // this is so the normal form handler doesn't resume after
     }
 
-    let sb = document.getElementsByClassName('submit-button')[0];
-    sb.addEventListener('click', submit);
+    if (!this.once) {
+      this.once = true;
 
-    let tb = document.getElementsByClassName('title-button')[0];
-    tb.addEventListener('click', post);
+      const sb = $('.submit-button')[0];
+      sb.addEventListener('click', submit);
 
-    let ctm = document.getElementsByClassName('close-title-modal')[0];
-    ctm.addEventListener('click', close);
+      const tb = $('.title-button')[0];
+      tb.addEventListener('click', post);
+
+      const ctm = $('.close-title-modal')[0];
+      ctm.addEventListener('click', close);
+    }
   }
 }
