@@ -169,7 +169,7 @@ class Rest {
 
     $response = array("success" => $msg);
 
-    if ( !empty(array_keys($this->data)) ) {
+    if ( !!array_keys($this->data) ) {
       $response["data"] = $this->data;
     }
 

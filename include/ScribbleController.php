@@ -114,7 +114,7 @@ class ScribbleController extends Scribble {
 
   public function handle() {
     $msg = $this->handleAction();
-    if (!empty($msg)) {
+    if (!!$msg) {
       $this->rest->error($msg);
     }
     $this->rest->success($this->action->value);
@@ -145,7 +145,7 @@ class ScribbleController extends Scribble {
         break;
       case ScribbleAction::GetAvatar:
         $username = $this->rest->getQueryField("username");
-        if(empty($username)) {
+        if(!$username) {
           $username = $this->rest->getUsername();
         }
         return $this->getAvatar($username);
@@ -178,7 +178,7 @@ class ScribbleController extends Scribble {
     // Checks
     /////////////////////////////////////////////////////////////////////
     // check for behavior when a form was too large to accept
-    if (empty($_POST)) {
+    if (!$_POST) {
       $length = $_SERVER['CONTENT_LENGTH'];
 
       $umf = return_bytes(ini_get('upload_max_filesize'));
@@ -189,7 +189,7 @@ class ScribbleController extends Scribble {
       }
     }
 
-    if (empty($_POST['scribble'])) {
+    if (!$_POST['scribble']) {
       return "Required json not present";
     }
 
@@ -212,7 +212,7 @@ class ScribbleController extends Scribble {
     }
 
     $error = $this->createScribble($username, $scribble->title, $scribble->data_url);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Creation failed. " . $error;
     }
 
@@ -226,7 +226,7 @@ class ScribbleController extends Scribble {
 
   private function getAvatar($username) {
     $error = $this->readScribbleAvatar($username);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Can't read scribble avatar. " . $error;
     }
 
@@ -241,7 +241,7 @@ class ScribbleController extends Scribble {
     $avatars = array();
     foreach ($usernames as $name) {
       $error = $this->readScribbleAvatar($name);
-      if (!empty($error)) {
+      if (!!$error) {
         return "Can't read scribble avatar. " . $error;
       }
 
@@ -254,7 +254,7 @@ class ScribbleController extends Scribble {
 
   private function get($id) {
     $msg = $this->readScribble($id);
-    if (!empty($msg)) {
+    if (!!$msg) {
       return "Error reading scribble. " . $msg;
     }
 
@@ -263,7 +263,7 @@ class ScribbleController extends Scribble {
 
   private function getMeta($id, $username) {
     $msg = $this->readMetadata($id, $username);
-    if (!empty($msg)) {
+    if (!!$msg) {
       return "Error reading metadata. " . $msg;
     }
 
@@ -272,10 +272,10 @@ class ScribbleController extends Scribble {
 
   // search titles by a query string
   private function search($search) {
-    if (empty($search)) {
+    if (!$search) {
       // search all scribbles
       $error = $this->getScribbleList();
-      if (!empty($error)) {
+      if (!!$error) {
         return "Error searching scribbles. " . $error;
       }
 
@@ -288,13 +288,13 @@ class ScribbleController extends Scribble {
 
       if ($result === 1) {
         $error = $this->getScribbleListByUsername($matches['username']);
-        if (!empty($error)) {
+        if (!!$error) {
           return "Error searching scribbles. " . $error;
         }
       } else {
         // default to search titles
         $error = $this->getScribbleSearchTitle($_GET["search"]);
-        if (!empty($error)) {
+        if (!!$error) {
           return "Error searching scribbles. " . $error;
         }
       }

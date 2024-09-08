@@ -55,7 +55,7 @@ class LogController {
 
   public function handle() {
     $msg = $this->handleAction();
-    if (!empty($msg)) {
+    if (!!$msg) {
       $this->rest->error($msg);
     }
     $this->rest->success($this->action->value);
@@ -77,14 +77,14 @@ class LogController {
     $log = array_reverse($log); // serve the new entries first
     $curated = array();
     foreach ($log as $line) {
-      if (empty($line)) {
+      if (!$line) {
         continue;
       }
 
       // date | endpoint | method | username | success | message
       $lineArr = explode(" | ", $line);
 
-      if (empty($endpoint)) {
+      if (!$endpoint) {
         $curated[] = $line; // show all logs if no endpoint given
       } else {
         if ($lineArr[1] === $endpoint) {

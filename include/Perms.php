@@ -23,18 +23,25 @@ class Perms extends DatabaseHandler {
   protected function readPerms() {
     $sql = "SELECT * FROM perms INNER JOIN users ON users.username = ? AND perms.user = users.id";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($this->username)) ) {
-      return "Database lookup failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    if ($statement->rowCount() !== 0) {
-      $row = $statement->fetch();
-      $this->roles["admin"] = $row["admin"];
-      $this->roles["moderator"]   = $row["moderator"];
-      $this->roles["tech"]  = $row["tech"];
-      $this->roles["beta"]  = $row["beta"];
+    try {
+      $statement = $pdo->prepare($sql);
+      if ( !$statement->execute(array($this->username)) ) {
+        return "Database lookup failed.";
+      }
+
+      if ($statement->rowCount() !== 0) {
+        $row = $statement->fetch();
+        $this->roles["admin"] = $row["admin"];
+        $this->roles["moderator"]   = $row["moderator"];
+        $this->roles["tech"]  = $row["tech"];
+        $this->roles["beta"]  = $row["beta"];
+      }
+    } catch (PDOException $e) {
+      return "Database execute error.";
     }
 
     $statement = null;
@@ -66,27 +73,35 @@ class Perms extends DatabaseHandler {
     // first test for existence of a perms entry
     $sql = "SELECT * FROM perms INNER JOIN users ON users.username = ? AND perms.user = users.id";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($this->username)) ) {
-      return "Database lookup failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    $sql = "";
-    $values = array();
-    if ($statement->rowCount() === 0) {
-      // no perms entry exists yet. create new perms row for the user
-      $sql = "INSERT INTO perms (user, ?) SELECT id, ? FROM users WHERE users.username = ?";
-      $values = array($level->value, $has, $username);
-    } else {
-      // perms entry exists. update it
-      $sql = "UPDATE perms SET ? = ? JOIN users WHERE users.username = ? AND perms.user = users.id";
-      $values = array($level->value, $has, $username);
-    }
+    try {
+      $statement = $pdo->prepare($sql);
 
-    $statement = $pdo->prepare($sql);
-    if ( !$statement->execute(array($this->username)) ) {
-      return "Database store failed.";
+      if ( !$statement->execute(array($this->username)) ) {
+        return "Database lookup failed.";
+      }
+
+      $sql = "";
+      $values = array();
+      if ($statement->rowCount() === 0) {
+        // no perms entry exists yet. create new perms row for the user
+        $sql = "INSERT INTO perms (user, ?) SELECT id, ? FROM users WHERE users.username = ?";
+        $values = array($level->value, $has, $username);
+      } else {
+        // perms entry exists. update it
+        $sql = "UPDATE perms SET ? = ? JOIN users WHERE users.username = ? AND perms.user = users.id";
+        $values = array($level->value, $has, $username);
+      }
+
+      $statement = $pdo->prepare($sql);
+      if ( !$statement->execute(array($this->username)) ) {
+        return "Database store failed.";
+      }
+    } catch (PDOException $e) {
+      return "Database execute error.";
     }
 
     $statement = null;
@@ -96,9 +111,18 @@ class Perms extends DatabaseHandler {
   // remove all perms from a user
   protected function wipeAuths($username) {
     $sql = "DELETE FROM perms JOIN users WHERE users.username = ? AND perms.user = users.id";
-    $statement = $pdo->prepare($sql);
-    if ( !$statement->execute(array($this->username)) ) {
-      return "Database store failed.";
+    $pdo = $this->connect();
+    if (!$pdo) {
+      return "Database connect error.";
+    }
+
+    try {
+      $statement = $pdo->prepare($sql);
+      if ( !$statement->execute(array($this->username)) ) {
+        return "Database store failed.";
+      }
+    } catch (PDOException $e) {
+      return "Database execute error.";
     }
 
     $statement = null;

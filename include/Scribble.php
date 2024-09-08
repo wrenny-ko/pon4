@@ -24,33 +24,35 @@ class Scribble extends DatabaseHandler {
   protected function createScribble($username, $title, $data_url) {
     $sql = "SELECT id FROM users WHERE username = ?";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($username)) ) {
-      return "Database username lookup failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    $uid = 1;
-    if ($statement->rowCount() !== 0) {
-      $row = $statement->fetch();
-      $uid = $row['id'];
-    }
-
-    $sql = "INSERT INTO scribbles (user, title, data_url) VALUES (?, ?, ?)";
-    $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    //$title = html_entity_decode($title, ENT_QUOTES | ENT_XML1, 'UTF-8');
-
+    $statement;
     try {
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($username)) ) {
+        return "Database username lookup failed.";
+      }
+
+      $uid = 1;
+      if ($statement->rowCount() !== 0) {
+        $row = $statement->fetch();
+        $uid = $row['id'];
+      }
+
+      $sql = "INSERT INTO scribbles (user, title, data_url) VALUES (?, ?, ?)";
+      $statement = $pdo->prepare($sql);
+
       if ( !$statement->execute(array($uid, htmlspecialchars($title), htmlspecialchars($data_url))) ) {
         return "Database insert failed.";
       }
-    } catch (Exception $e) {
-        return "Database error.";
-    }
 
-    $this->id = $pdo->lastInsertId();
+      $this->id = $pdo->lastInsertId();
+    } catch (PDOException $e) {
+        return "Database execute error.";
+    }
 
     $statement = null;
     return "";
@@ -59,18 +61,27 @@ class Scribble extends DatabaseHandler {
   protected function readUserID($username) {
     $sql = "SELECT id FROM users WHERE username = ?";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($username)) ) {
-      return "Database lookup failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    if ($statement->rowCount() === 0) {
-      return "User does not exist.";
-    }
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
 
-    $row = $statement->fetch();
-    $this->userID = $row['id'];
+      if ( !$statement->execute(array($username)) ) {
+        return "Database lookup failed.";
+      }
+
+      if ($statement->rowCount() === 0) {
+        return "User does not exist.";
+      }
+
+      $row = $statement->fetch();
+      $this->userID = $row['id'];
+    } catch (PDOException $e) {
+        return "Database execute error.";
+    }
 
     $statement = null;
     return "";
@@ -79,18 +90,27 @@ class Scribble extends DatabaseHandler {
   protected function readAvatarID($username) {
     $sql = "SELECT avatar FROM users WHERE username = ?";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($username)) ) {
-      return "Database lookup failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    if ($statement->rowCount() === 0) {
-      return "User does not exist.";
-    }
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
 
-    $row = $statement->fetch();
-    $this->avatarID = $row['avatar'];
+      if ( !$statement->execute(array($username)) ) {
+        return "Database lookup failed.";
+      }
+
+      if ($statement->rowCount() === 0) {
+        return "User does not exist.";
+      }
+
+      $row = $statement->fetch();
+      $this->avatarID = $row['avatar'];
+    } catch (PDOException $e) {
+        return "Database execute error.";
+    }
 
     $statement = null;
     return "";
@@ -105,23 +125,32 @@ class Scribble extends DatabaseHandler {
 EOF;
 
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($id)) ) {
-      return "Database lookup failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    if ($statement->rowCount() === 0) {
-      return "Scribble does not exist.";
-    }
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
 
-    $row = $statement->fetch();
-    $this->id       = $row['id'];
-    $this->username = $row['username'];
-    $this->title    = htmlspecialchars_decode($row['title']);
-    $this->data_url = htmlspecialchars_decode($row['data_url']);
-    $this->likes    = $row['likes'];
-    $this->dislikes = $row['dislikes'];
+      if ( !$statement->execute(array($id)) ) {
+        return "Database lookup failed.";
+      }
+
+      if ($statement->rowCount() === 0) {
+        return "Scribble does not exist.";
+      }
+
+      $row = $statement->fetch();
+      $this->id       = $row['id'];
+      $this->username = $row['username'];
+      $this->title    = htmlspecialchars_decode($row['title']);
+      $this->data_url = htmlspecialchars_decode($row['data_url']);
+      $this->likes    = $row['likes'];
+      $this->dislikes = $row['dislikes'];
+    } catch (PDOException $e) {
+        return "Database execute error.";
+    }
 
     $statement = null;
     return "";
@@ -130,30 +159,39 @@ EOF;
   protected function deleteScribble($id) {
     $sql = "DELETE FROM likes WHERE likes.scribble = ?";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($id)) ) {
-      return "Database delete failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    $sql = "DELETE FROM dislikes WHERE dislikes.scribble = ?";
-    $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
 
-    if ( !$statement->execute(array($id)) ) {
-      return "Database delete failed.";
-    }
+      if ( !$statement->execute(array($id)) ) {
+        return "Database delete failed.";
+      }
 
-    $sql = "DELETE FROM scribbles WHERE id = ?";
-    $statement = $pdo->prepare($sql);
+      $sql = "DELETE FROM dislikes WHERE dislikes.scribble = ?";
+      $pdo = $this->connect();
+      $statement = $pdo->prepare($sql);
 
-    if ( !$statement->execute(array($id)) ) {
-      return "Database delete failed.";
-    }
+      if ( !$statement->execute(array($id)) ) {
+        return "Database delete failed.";
+      }
 
-    // mysql should return 1 row
-    if ($statement->rowCount() === 0) {
-      return "Scribble does not exist.";
+      $sql = "DELETE FROM scribbles WHERE id = ?";
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($id)) ) {
+        return "Database delete failed.";
+      }
+
+      // mysql should return 1 row
+      if ($statement->rowCount() === 0) {
+        return "Scribble does not exist.";
+      }
+    } catch (PDOException $e) {
+        return "Database execute error.";
     }
 
     $statement = null;
@@ -185,7 +223,7 @@ EOF;
 
   public function readMetadata($id, $username) {
     $err = $this->readScribble($id);
-    if (!empty($err)) {
+    if (!!$err) {
       return "Error reading scribble. " . $err;
     }
 
@@ -193,26 +231,35 @@ EOF;
 
     $sql = "SELECT * FROM likes JOIN users WHERE likes.scribble = ? AND likes.user = users.id AND users.username = ?";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($id, $username)) ) {
-      return "Database update failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    $user_data['liked'] = ($statement->rowCount() > 0) ? true : false;
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
 
-    
-    $sql = "SELECT * FROM dislikes JOIN users WHERE dislikes.scribble = ? AND dislikes.user = users.id AND users.username = ?";
-    $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
+      if ( !$statement->execute(array($id, $username)) ) {
+        return "Database update failed.";
+      }
 
-    if ( !$statement->execute(array($id, $username)) ) {
-      return "Database update failed.";
+      $user_data['liked'] = ($statement->rowCount() > 0) ? true : false;
+
+      
+      $sql = "SELECT * FROM dislikes JOIN users WHERE dislikes.scribble = ? AND dislikes.user = users.id AND users.username = ?";
+      $pdo = $this->connect();
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($id, $username)) ) {
+        return "Database update failed.";
+      }
+
+      $user_data['disliked'] = ($statement->rowCount() > 0) ? true : false;
+
+      $this->user_data = $user_data;
+    } catch (PDOException $e) {
+        return "Database execute error.";
     }
-
-    $user_data['disliked'] = ($statement->rowCount() > 0) ? true : false;
-
-    $this->user_data = $user_data;
 
     $statement = null;
     return "";
@@ -220,12 +267,12 @@ EOF;
 
   public function readScribbleAvatar($username) {
     $error = $this->readAvatarID($username);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Error reading avatar ID. " . $error;
     }
 
     $error = $this->readScribble($this->avatarID);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Error reading scribble avatar. " . $error;
     }
 
@@ -236,13 +283,22 @@ EOF;
   protected function setDefaultAvatars($id) {
     $sql = "UPDATE users SET avatar = 1 WHERE avatar = ?";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($id)) ) {
-      return "Database update failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    $this->numWipedAvatars = $statement->rowCount();
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($id)) ) {
+        return "Database update failed.";
+      }
+
+      $this->numWipedAvatars = $statement->rowCount();
+    } catch (PDOException $e) {
+        return "Database execute error.";
+    }
 
     $statement = null;
     return "";
@@ -256,12 +312,12 @@ EOF;
     }
 
     $error = $this->deleteScribble($id);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Couldn't delete scribble. " . $error;
     }
 
     $error = $this->setDefaultAvatars($id);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Couldn't update avatars. " . $error;
     }
 
@@ -274,24 +330,33 @@ EOF;
     $sql = "SELECT users.username, scribbles.id, scribbles.title, scribbles.data_url 
      FROM scribbles INNER JOIN users ON users.id = scribbles.user";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute() ) {
-      return "Database lookup failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    if ($statement->rowCount() === 0) {
-      $this->scribbleList = array();
-      return ""; // let controller return an empty list
-    }
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
 
-    $list = array();
-    while ($row = $statement->fetch()) {
-      $row["title"] = htmlspecialchars_decode($row['title']);
-      $list[$row["id"]] = $row;
-    }
+      if ( !$statement->execute() ) {
+        return "Database lookup failed.";
+      }
 
-    $this->scribbleList = $list;
+      if ($statement->rowCount() === 0) {
+        $this->scribbleList = array();
+        return ""; // let controller return an empty list
+      }
+
+      $list = array();
+      while ($row = $statement->fetch()) {
+        $row["title"] = htmlspecialchars_decode($row['title']);
+        $list[$row["id"]] = $row;
+      }
+
+      $this->scribbleList = $list;
+    } catch (PDOException $e) {
+        return "Database execute error.";
+    }
 
     $statement = null;
     return "";
@@ -302,24 +367,33 @@ EOF;
     $sql = "SELECT users.username, scribbles.id, scribbles.title, scribbles.data_url 
      FROM scribbles INNER JOIN users ON users.id = scribbles.user WHERE users.username = ?";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($username)) ) {
-      return "Database lookup failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    if ($statement->rowCount() === 0) {
-      $this->scribbleList = array();
-      return ""; // let controller return an empty list
-    }
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
 
-    $list = array();
-    while ($row = $statement->fetch()) {
-      $row['title'] = htmlspecialchars_decode($row['title']);
-      $list[] = $row;
-    }
+      if ( !$statement->execute(array($username)) ) {
+        return "Database lookup failed.";
+      }
 
-    $this->scribbleList = $list;
+      if ($statement->rowCount() === 0) {
+        $this->scribbleList = array();
+        return ""; // let controller return an empty list
+      }
+
+      $list = array();
+      while ($row = $statement->fetch()) {
+        $row['title'] = htmlspecialchars_decode($row['title']);
+        $list[] = $row;
+      }
+
+      $this->scribbleList = $list;
+    } catch (PDOException $e) {
+        return "Database execute error.";
+    }
 
     $statement = null;
     return "";
@@ -330,50 +404,68 @@ EOF;
     $sql = "SELECT users.username, scribbles.id, scribbles.title, scribbles.data_url 
      FROM scribbles INNER JOIN users ON users.id = scribbles.user WHERE scribbles.title LIKE ?";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    $search = '%' . htmlspecialchars($search) . '%';
-    if ( !$statement->execute(array($search)) ) {
-      return "Database lookup failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    if ($statement->rowCount() === 0) {
-      $this->scribbleList = array();
-      return ""; // let controller return an empty list
-    }
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
 
-    $list = array();
-    while ($row = $statement->fetch()) {
-      $row['title'] = htmlspecialchars_decode($row['title']);
-      $list[] = $row;
-    }
+      $search = '%' . htmlspecialchars($search) . '%';
+      if ( !$statement->execute(array($search)) ) {
+        return "Database lookup failed.";
+      }
 
-    $this->scribbleList = $list;
+      if ($statement->rowCount() === 0) {
+        $this->scribbleList = array();
+        return ""; // let controller return an empty list
+      }
+
+      $list = array();
+      while ($row = $statement->fetch()) {
+        $row['title'] = htmlspecialchars_decode($row['title']);
+        $list[] = $row;
+      }
+
+      $this->scribbleList = $list;
+    } catch (PDOException $e) {
+        return "Database execute error.";
+    }
 
     $statement = null;
     return "";
   }
 
   protected function removeLike($id, $username) {
-    // remove like
     $sql = "DELETE l FROM likes l JOIN users u ON u.username = ? WHERE u.id = l.user AND l.scribble = ?";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($username, $id)) ) {
-      return "Database delete failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    // update scribble like count if a like was deleted
-    if ($statement->rowCount() > 0) {
-      $sql = "UPDATE scribbles SET likes = likes - 1 WHERE id = ?";
+    $statement;
+    try {
       $statement = $pdo->prepare($sql);
 
-      if ( !$statement->execute(array($id)) ) {
-        return "Database update failed.";
+      if ( !$statement->execute(array($username, $id)) ) {
+        return "Database delete failed.";
       }
+
+      // update scribble like count if a like was deleted
+      if ($statement->rowCount() > 0) {
+        $sql = "UPDATE scribbles SET likes = likes - 1 WHERE id = ?";
+        $statement = $pdo->prepare($sql);
+
+        if ( !$statement->execute(array($id)) ) {
+          return "Database update failed.";
+        }
+      }
+    } catch (PDOException $e) {
+        return "Database execute error.";
     }
 
+    $statement = null;
     return "";
   }
 
@@ -382,78 +474,107 @@ EOF;
     // example of using a subquery
     $sql = "INSERT INTO likes (user, scribble) SELECT id, ? FROM users WHERE users.username = ? AND ? IN (SELECT id FROM scribbles WHERE scribbles.id = ?)";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($id, $username, $id, $id)) ) {
-      return "Database insert failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    // update scribble like count
-    $sql = "UPDATE scribbles SET likes = likes + 1 WHERE id = ?";
-    $statement = $pdo->prepare($sql);
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
 
-    if ( !$statement->execute(array($id)) ) {
-      return "Database update failed.";
-    }
+      if ( !$statement->execute(array($id, $username, $id, $id)) ) {
+        return "Database insert failed.";
+      }
 
-    // remove dislike, if any
-    $sql = "DELETE dl FROM dislikes dl JOIN users u ON u.username = ? WHERE u.id = dl.user AND dl.scribble = ?";
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($username, $id)) ) {
-      return "Database delete failed.";
-    }
-
-    // update scribble dislike count if a dislike was deleted
-    if ($statement->rowCount() > 0) {
-      $sql = "UPDATE scribbles SET dislikes = dislikes - 1 WHERE id = ?";
+      // update scribble like count
+      $sql = "UPDATE scribbles SET likes = likes + 1 WHERE id = ?";
       $statement = $pdo->prepare($sql);
 
       if ( !$statement->execute(array($id)) ) {
         return "Database update failed.";
       }
+
+      // remove dislike, if any
+      $sql = "DELETE dl FROM dislikes dl JOIN users u ON u.username = ? WHERE u.id = dl.user AND dl.scribble = ?";
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($username, $id)) ) {
+        return "Database delete failed.";
+      }
+
+      // update scribble dislike count if a dislike was deleted
+      if ($statement->rowCount() > 0) {
+        $sql = "UPDATE scribbles SET dislikes = dislikes - 1 WHERE id = ?";
+        $statement = $pdo->prepare($sql);
+
+        if ( !$statement->execute(array($id)) ) {
+          return "Database update failed.";
+        }
+      }
+    } catch (PDOException $e) {
+        return "Database execute error.";
     }
 
+    $statement = null;
     return "";
   }
 
   protected function like($id, $username) {
     // check if the like already exists
-    //TODO this sql could be refined
     $sql = "SELECT * FROM likes JOIN users WHERE likes.scribble = ? AND users.username = ? AND likes.user = users.id";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($id, $username)) ) {
-      return "Database lookup failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    if ($statement->rowCount() === 0) {
-      return $this->addLike($id, $username); // like does not exist yet
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($id, $username)) ) {
+        return "Database lookup failed.";
+      }
+
+      if ($statement->rowCount() === 0) {
+        $statement = null;
+        return $this->addLike($id, $username); // like does not exist yet
+      }
+      $statement = null;
+      return $this->removeLike($id, $username); // like exists
+    } catch (PDOException $e) {
+        return "Database execute error.";
     }
-    return $this->removeLike($id, $username); // like exists
   }
 
   protected function removeDislike($id, $username) {
-    // remove dislike
     $sql = "DELETE dl FROM dislikes dl JOIN users u ON u.username = ? WHERE u.id = dl.user AND dl.scribble = ?";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($username, $id)) ) {
-      return "Database delete failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    // update scribble dislike count if a dislike was deleted
-    if ($statement->rowCount() > 0) {
-      $sql = "UPDATE scribbles SET dislikes = dislikes - 1 WHERE id = ?";
+    $statement;
+    try {
       $statement = $pdo->prepare($sql);
 
-      if ( !$statement->execute(array($id)) ) {
-        return "Database update failed.";
+      if ( !$statement->execute(array($username, $id)) ) {
+        return "Database delete failed.";
       }
+
+      // update scribble dislike count if a dislike was deleted
+      if ($statement->rowCount() > 0) {
+        $sql = "UPDATE scribbles SET dislikes = dislikes - 1 WHERE id = ?";
+        $statement = $pdo->prepare($sql);
+
+        if ( !$statement->execute(array($id)) ) {
+          return "Database update failed.";
+        }
+      }
+    } catch (PDOException $e) {
+        return "Database execute error.";
     }
 
+    $statement = null;
     return "";
   }
 
@@ -462,57 +583,77 @@ EOF;
     // example of using a subquery
     $sql = "INSERT INTO dislikes (user, scribble) SELECT id, ? FROM users WHERE users.username = ? AND ? IN (SELECT id FROM scribbles WHERE scribbles.id = ?)";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($id, $username, $id, $id)) ) {
-      return "Database insert failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    // update scribble dislike count
-    $sql = "UPDATE scribbles SET dislikes = dislikes + 1 WHERE id = ?";
-    $statement = $pdo->prepare($sql);
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
 
-    if ( !$statement->execute(array($id)) ) {
-      return "Database update failed.";
-    }
+      if ( !$statement->execute(array($id, $username, $id, $id)) ) {
+        return "Database insert failed.";
+      }
 
-    // remove like, if any
-    $sql = "DELETE l FROM likes l JOIN users u ON u.username = ? WHERE u.id = l.user AND l.scribble = ?";
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($username, $id)) ) {
-      return "Database delete failed.";
-    }
-
-
-    // update scribble like count if a like was deleted
-    if ($statement->rowCount() > 0) {
-      $sql = "UPDATE scribbles SET likes = likes - 1 WHERE id = ?";
+      // update scribble dislike count
+      $sql = "UPDATE scribbles SET dislikes = dislikes + 1 WHERE id = ?";
       $statement = $pdo->prepare($sql);
 
       if ( !$statement->execute(array($id)) ) {
         return "Database update failed.";
       }
+
+      // remove like, if any
+      $sql = "DELETE l FROM likes l JOIN users u ON u.username = ? WHERE u.id = l.user AND l.scribble = ?";
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($username, $id)) ) {
+        return "Database delete failed.";
+      }
+
+
+      // update scribble like count if a like was deleted
+      if ($statement->rowCount() > 0) {
+        $sql = "UPDATE scribbles SET likes = likes - 1 WHERE id = ?";
+        $statement = $pdo->prepare($sql);
+
+        if ( !$statement->execute(array($id)) ) {
+          return "Database update failed.";
+        }
+      }
+    } catch (PDOException $e) {
+        return "Database execute error.";
     }
 
+    $statement = null;
     return "";
   }
 
   protected function dislike($id, $username) {
     // check if the dislike already exists
-    //TODO this sql could be refined
     $sql = "SELECT * FROM dislikes JOIN users WHERE dislikes.scribble = ? AND users.username = ? AND dislikes.user = users.id";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
-
-    if ( !$statement->execute(array($id, $username)) ) {
-      return "Database lookup failed.";
+    if (!$pdo) {
+      return "Database connect error.";
     }
 
-    if ($statement->rowCount() === 0) {
-      return $this->addDislike($id, $username);
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($id, $username)) ) {
+        return "Database lookup failed.";
+      }
+
+      if ($statement->rowCount() === 0) {
+        $statement = null;
+        return $this->addDislike($id, $username);
+      }
+      $statement = null;
+      return $this->removeDislike($id, $username);
+    } catch (PDOException $e) {
+        return "Database execute error.";
     }
-    return $this->removeDislike($id, $username);
   }
 
   protected function comment($id, $username, $msg) {

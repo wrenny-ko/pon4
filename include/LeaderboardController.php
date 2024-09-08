@@ -64,7 +64,7 @@ class LeaderboardController extends Leaderboard {
 
   public function handle() {
     $msg = $this->handleAction();
-    if (!empty($msg)) {
+    if (!!$msg) {
       $this->rest->error($msg);
     }
     $this->rest->success($this->action->value);
@@ -85,7 +85,7 @@ class LeaderboardController extends Leaderboard {
 
   private function setMaxRows($maxRows) {
     $max = "10";
-    if (!empty($maxRows)) {
+    if (!!$maxRows) {
       if (!filter_var( $maxRows, FILTER_VALIDATE_INT, array('options' => array( 'min_range' => 0)) )) {
         $this->rest->error("invalid max_rows value: requires integer greater than 0");
       }
@@ -135,7 +135,11 @@ class LeaderboardController extends Leaderboard {
       $this->rest->error("invalid datatables query. order column name not matched");
     }
 
-    $this->populate($sortCol, $sortDir);
+    $err = $this->populate($sortCol, $sortDir);
+    if (!!$err) {
+      return "Error populating leaderboard. " . $err;
+    }
+
     $this->rest->setData($this->board);
     $this->rest->setResponseField("recordsFiltered", $this->numFilteredEntries);
     $this->rest->success("sortCol: '" . $sortCol->value . "', sortDir: '" . $dir . "'");

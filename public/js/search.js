@@ -28,46 +28,47 @@ export class Search {
 
     const cart = $('.scribble-card-cart')[0];
 
-    const response = await axios.get(url)
+    await axios.get(url)
+      .then( response => {
+        if (!response.data.hasOwnProperty('scribbles') || response.data.scribbles.length === 0) {
+          cart.innerHTML = 'No scribbles found by that query...';
+          return;
+        }
+
+        cart.innerHTML = '';
+        let scribbles = Object.entries(response.data.scribbles);
+
+        for (let i = scribbles.length - 1; i >= 0; i--) {
+          const scribble = scribbles[i][1];
+
+          const newCard = document.createElement('a');
+          newCard.classList.add('scribble-card');
+          newCard.classList.add('site-nav');
+          newCard.id = scribble.id;
+          newCard.href = 'scribble?id=' + scribble.id;
+          cart.appendChild(newCard);
+
+          const newImg = document.createElement('img');
+          newImg.classList.add('scribble-card-image');
+          newImg.src = scribble.data_url;
+          newCard.appendChild(newImg);
+
+          let title = scribble.title;
+          if (title.length > 15) {
+            title = title.substr(0, 14) + '\n' + title.substr(15);
+          }
+
+          const newTitle = document.createElement('div');
+          newTitle.classList.add('scribble-card-title');
+          newTitle.innerText = title;
+          newCard.appendChild(newTitle);
+
+          //TODO add author name and avatar
+        }
+      })
       .catch((error) => {
-        console.log(error);
-        cart.innerHTML = error.toJSON();
-    });
-
-    if (!response.data.hasOwnProperty('scribbles') || response.data.scribbles.length === 0) {
-      cart.innerHTML = 'No scribbles found by that query...';
-      return;
-    }
-
-    cart.innerHTML = '';
-    let scribbles = Object.entries(response.data.scribbles);
-
-    for (let i = scribbles.length - 1; i >= 0; i--) {
-      const scribble = scribbles[i][1];
-
-      const newCard = document.createElement('a');
-      newCard.classList.add('scribble-card');
-      newCard.classList.add('site-nav');
-      newCard.id = scribble.id;
-      newCard.href = 'scribble?id=' + scribble.id;
-      cart.appendChild(newCard);
-
-      const newImg = document.createElement('img');
-      newImg.classList.add('scribble-card-image');
-      newImg.src = scribble.data_url;
-      newCard.appendChild(newImg);
-
-      let title = scribble.title;
-      if (title.length > 15) {
-        title = title.substr(0, 14) + '\n' + title.substr(15);
-      }
-
-      const newTitle = document.createElement('div');
-      newTitle.classList.add('scribble-card-title');
-      newTitle.innerText = title;
-      newCard.appendChild(newTitle);
-
-      //TODO add author name and avatar
-    }
+        cart.innerHTML = error.response.data.error;
+        cart.style.color = 'red';
+      });
   }
 }

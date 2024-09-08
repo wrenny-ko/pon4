@@ -123,6 +123,8 @@ export class Leaderboard {
       //console.log('Redraw occurred at: ' + new Date().getTime());
       populateAvatars();
     });
+
+    $.fn.dataTable.ext.errMode = 'none'; //prevents the alert() calls
   }
 
   showSetMaxRows() {

@@ -37,7 +37,16 @@ class Leaderboard extends DatabaseHandler {
   protected function readMaxRows() {
     $sql = "SELECT max_rows FROM leaderboard";
     $pdo = $this->connect();
-    $statement = $pdo->query($sql);
+    if (!$pdo) {
+      return "Database connect error.";
+    }
+
+    $statement;
+    try {
+      $statement = $pdo->query($sql);
+    } catch (PDOException $e) {
+      return "Database query error.";
+    }
 
     $this->maxRows = $statement->fetchColumn();
 
@@ -48,10 +57,19 @@ class Leaderboard extends DatabaseHandler {
   protected function writeMaxRows($num) {
     $sql = "UPDATE leaderboard SET max_rows = ? WHERE id = 1";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
+    if (!$pdo) {
+      return "Database connect error.";
+    }
 
-    if ( !$statement->execute(array($num)) ) {
-      return "Database update failed.";
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
+
+      if ( !$statement->execute(array($num)) ) {
+        return "Database update failed.";
+      }
+    } catch (PDOException $e) {
+      return "Database execute error.";
     }
 
     $statement = null;
@@ -61,9 +79,17 @@ class Leaderboard extends DatabaseHandler {
   protected function readNumTotalEntries() {
     $sql = "SELECT COUNT(*) FROM users";
     $pdo = $this->connect();
-    $statement = $pdo->query($sql);
+    if (!$pdo) {
+      return "Database connect error.";
+    }
 
-    $this->numTotalEntries = $statement->fetchColumn();
+    try {
+      $statement = $pdo->query($sql);
+
+      $this->numTotalEntries = $statement->fetchColumn();
+    } catch (PDOException $e) {
+      return "Database query error.";
+    }
 
     $statement = null;
     return "";
@@ -76,10 +102,18 @@ class Leaderboard extends DatabaseHandler {
     //   set class variable
     $sql = "SELECT * FROM users";
     $pdo = $this->connect();
-    $statement = $pdo->prepare($sql);
+    if (!$pdo) {
+      return "Database connect error.";
+    }
 
-    if ( !$statement->execute(array()) ) {
-      return "Database lookup failed.";
+    $statement;
+    try {
+      $statement = $pdo->prepare($sql);
+      if ( !$statement->execute(array()) ) {
+        return "Database lookup failed.";
+      }
+    } catch (PDOException $e) {
+      return "Database error.";
     }
 
     $users = array();
@@ -90,46 +124,50 @@ class Leaderboard extends DatabaseHandler {
     foreach ($users as &$stats) {
       // find how many scribbles the given user created
       $sql = "SELECT COUNT(*) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
-      $statement = $pdo->prepare($sql);
-      if ( !$statement->execute(array($stats["username"])) ) {
-        return "Database lookup failed.";
-      }
+      try {
+        $statement = $pdo->prepare($sql);
+        if ( !$statement->execute(array($stats["username"])) ) {
+          return "Database lookup failed.";
+        }
 
-      $stats["total_scribbles"] = $statement->fetchColumn();
+        $stats["total_scribbles"] = $statement->fetchColumn();
 
-      // find how many users currently use an avatar created by given user
-      $sql = <<<EOF
-      SELECT COUNT(*) FROM scribbles
-      JOIN users AS uploaders ON uploaders.username = ?
-      JOIN users AS everyone
-      WHERE scribbles.user = uploaders.id AND scribbles.id = everyone.avatar
+        // find how many users currently use an avatar created by given user
+        $sql = <<<EOF
+          SELECT COUNT(*) FROM scribbles
+          JOIN users AS uploaders ON uploaders.username = ?
+          JOIN users AS everyone
+          WHERE scribbles.user = uploaders.id AND scribbles.id = everyone.avatar
 EOF;
-      $statement = $pdo->prepare($sql);
-      if ( !$statement->execute(array($stats["username"])) ) {
-        return "Database lookup failed.";
+        $statement = $pdo->prepare($sql);
+        if ( !$statement->execute(array($stats["username"])) ) {
+          return "Database lookup failed.";
+        }
+
+        $stats["avatar_use"] = $statement->fetchColumn();
+
+        // find how many total likes the given user has
+        $sql = "SELECT SUM(likes) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
+        $statement = $pdo->prepare($sql);
+        if ( !$statement->execute(array($stats["username"])) ) {
+          return "Database lookup failed.";
+        }
+
+        $likes = $statement->fetchColumn();
+        $stats["likes"] = is_string($likes) ? $likes : 0;
+
+        // find how many total dislikes the given user has
+        $sql = "SELECT SUM(dislikes) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
+        $statement = $pdo->prepare($sql);
+        if ( !$statement->execute(array($stats["username"])) ) {
+          return "Database lookup failed.";
+        }
+
+        $dislikes = $statement->fetchColumn();
+        $stats["dislikes"] = is_string($dislikes) ? $dislikes : 0;
+      } catch (PDOException $e) {
+        return "Database error.";
       }
-
-      $stats["avatar_use"] = $statement->fetchColumn();
-
-      // find how many total likes the given user has
-      $sql = "SELECT SUM(likes) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
-      $statement = $pdo->prepare($sql);
-      if ( !$statement->execute(array($stats["username"])) ) {
-        return "Database lookup failed.";
-      }
-
-      $likes = $statement->fetchColumn();
-      $stats["likes"] = is_string($likes) ? $likes : 0;
-
-      // find how many total dislikes the given user has
-      $sql = "SELECT SUM(dislikes) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
-      $statement = $pdo->prepare($sql);
-      if ( !$statement->execute(array($stats["username"])) ) {
-        return "Database lookup failed.";
-      }
-
-      $dislikes = $statement->fetchColumn();
-      $stats["dislikes"] = is_string($dislikes) ? $dislikes : 0;
 
       // calculate the like/dislike ratio
       $stats["like_ratio"] = $stats["likes"] - $stats["dislikes"];

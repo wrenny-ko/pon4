@@ -103,27 +103,27 @@ class User extends DatabaseHandler {
 
   protected function loginUser() {
     $error = $this->checkEmptyLoginInput();
-    if (!empty($error)) {
+    if (!!$error) {
       return "Empty login fields. " . $error;
     }
 
     $error = $this->validateUsername($this->username);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Invalid username. " . $error;
     }
 
     $error = $this->validatePassword($this->password);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Invalid password. " . $error;
     }
 
     $error = $this->checkUserExists($this->username);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Username check failed. " . $error;
     }
 
     $error = $this->comparePassword($this->username, $this->password);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Password check failed. " . $error;
     }
 
@@ -132,9 +132,9 @@ class User extends DatabaseHandler {
   }
 
   private function checkEmptyLoginInput() {
-    if (empty($this->username)) {
+    if (!$this->username) {
       return "Username required.";
-    } else if (empty($this->password)) {
+    } else if (!$this->password) {
       return "Password required.";
     }
     return "";
@@ -142,32 +142,32 @@ class User extends DatabaseHandler {
 
   protected function signupUser() {
     $error = $this->checkEmptySignupInput();
-    if (!empty($error)) {
+    if (!!$error) {
       return "Empty input. " . $error;
     }
 
     $error = $this->validateUsername($this->username);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Invalid username. " . $error;
     }
 
     $error = $this->validateEmail($this->email);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Invalid email. " . $error;
     }
 
     $error = $this->validatePassword($this->password);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Invalid password. " . $error;
     }
 
     $error = $this->checkUserExistsEmail($this->username, $this->email);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Failed check. " . $error;
     }
 
     $error = $this->createUser($this->username, $this->email, $this->password);
-    if (!empty($error)) {
+    if (!!$error) {
       return "Could not create user. " . $error;
     }
 
@@ -175,11 +175,11 @@ class User extends DatabaseHandler {
   }
 
   private function checkEmptySignupInput() {
-    if (empty($this->username)) {
+    if (!$this->username) {
       return "Username required";
-    } else if (empty($this->email)) {
+    } else if (!$this->email) {
       return "Email required.";
-    } else if (empty($this->password)) {
+    } else if (!$this->password) {
       return "Password required.";
     }
     return "";

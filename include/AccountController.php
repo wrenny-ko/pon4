@@ -71,7 +71,7 @@ class AccountController extends User {
 
   public function handle() {
     $msg = $this->handleAction();
-    if (!empty($msg)) {
+    if (!!$msg) {
       $this->rest->error($msg);
     }
     $this->rest->success($this->action->value);
@@ -110,7 +110,7 @@ class AccountController extends User {
     $this->password = $_POST["password"];
 
     $err = $this->loginUser();
-    if (!empty($err)) {
+    if (!!$err) {
       return "Error logging in user. " . $err;
     }
 
@@ -140,7 +140,7 @@ class AccountController extends User {
     $this->password = $_POST["password"];
 
     $err = $this->signupUser();
-    if (!empty($err)) {
+    if (!!$err) {
       return "Error signing up user. " . $err;
     }
 
@@ -149,7 +149,7 @@ class AccountController extends User {
 
   private function setAvatar($id, $username) {
     $err = $this->updateAvatar($id, $username);
-    if (!empty($err)) {
+    if (!!$err) {
       return "Error setting avatar. " . $err;
     }
 
