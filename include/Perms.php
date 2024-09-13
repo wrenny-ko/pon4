@@ -26,6 +26,10 @@ class Perms extends DatabaseHandler {
     $this->readPerms();
   }
 
+  public function __destruct() {
+    $this->pdo = null;
+  }
+
   protected function readPerms() {
     $sql = "SELECT * FROM perms INNER JOIN users ON users.username = ? AND perms.user = users.id";
     try {

@@ -53,6 +53,10 @@ class LogController {
     $this->rest->auth();
   }
 
+  public function __destruct() {
+    $this->rest = null;
+  }
+
   public function handle() {
     $msg = $this->handleAction();
     if (!!$msg) {

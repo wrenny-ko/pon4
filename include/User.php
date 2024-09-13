@@ -18,6 +18,10 @@ class User extends DatabaseHandler {
     }
   }
 
+  public function __destruct() {
+    $this->pdo = null;
+  }
+
   protected function createUser($username, $email, $password) {
     $sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
     $statement;

@@ -31,6 +31,10 @@ class Leaderboard extends DatabaseHandler {
     $this->readNumTotalEntries();
   }
 
+  public function __destruct() {
+    $this->pdo = null;
+  }
+
   public function getBoard() {
     return $this->board;
   }

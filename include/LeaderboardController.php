@@ -67,6 +67,11 @@ class LeaderboardController extends Leaderboard {
     $this->readNumTotalEntries();
   }
 
+  public function __destruct() {
+    $this->rest = null;
+    $this->pdo = null;
+  }
+
   public function handle() {
     $msg = $this->handleAction();
     if (!!$msg) {

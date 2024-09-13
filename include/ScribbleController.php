@@ -123,6 +123,11 @@ class ScribbleController extends Scribble {
     }
   }
 
+  public function __destruct() {
+    $this->rest = null;
+    $this->pdo = null;
+  }
+
   public function handle() {
     $msg = $this->handleAction();
     if (!!$msg) {
@@ -190,6 +195,7 @@ class ScribbleController extends Scribble {
   }
 
   private function upload($username) {
+    require_once $_SERVER['DOCUMENT_ROOT'] . "/../include/common/util.php";
     // Checks
     /////////////////////////////////////////////////////////////////////
     // check for behavior when a form was too large to accept

@@ -33,4 +33,8 @@ class DatabaseHandler {
   public function disconnect() {
     $this->pdo = null;
   }
+
+  public function __destruct() {
+    $this->pdo = null;
+  }
 }

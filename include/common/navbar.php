@@ -1,14 +1,9 @@
 <?php
-  $search = "";
-  if (isset($_GET["search"])) {
-    $search = $_GET["search"];
-  }
+  $search = $_GET["search"] ?? "";
 
   $sc = new Scribble();
   $sc->readScribbleAvatar($username); // $username defined in include/common/includes.php
   $avatar = $sc->getScribble();
-
-  $sc->disconnect();
   $sc = null;
 ?>
 <div class="navbar">

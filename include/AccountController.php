@@ -74,6 +74,11 @@ class AccountController extends User {
     }
   }
 
+  public function __destruct() {
+    $this->rest = null;
+    $this->pdo = null;
+  }
+
   public function handle() {
     $msg = $this->handleAction();
     if (!!$msg) {
@@ -119,11 +124,15 @@ class AccountController extends User {
       return "Error logging in user. " . $err;
     }
 
+    $_SESSION['username'] = $_POST["username"];
+    $_SESSION['perms'] = new Perms($this->username);
+
     return "";
   }
 
   private function logout() {
-    session_unset(); // unset $_SESSION['username']
+    //unset $_SESSION['username'] and $_SESSION['perms']
+    session_unset();
     session_destroy();
   }
 
@@ -148,6 +157,9 @@ class AccountController extends User {
     if (!!$err) {
       return "Error signing up user. " . $err;
     }
+
+    $_SESSION['username'] = $_POST["username"];
+    $_SESSION['perms'] = new Perms($this->username);
 
     return "";
   }

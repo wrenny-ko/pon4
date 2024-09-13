@@ -20,6 +20,14 @@ class Scribble extends DatabaseHandler {
     }
   }
 
+  public function __destruct() {
+    $this->pdo = null;
+  }
+
+  public function disconnect() {
+    $this->pdo = null;
+  }
+
   public function getDataURL() {
     return $this->data_url;
   }
@@ -627,6 +635,8 @@ EOF;
 
   // recolors (fades)
   private function processForImport() {
+    require_once $_SERVER['DOCUMENT_ROOT'] . "/../include/common/util.php";
+
     try {
       $url = substr($this->data_url, 22); // strip out "data:image/png;base64,"
       str_replace(' ', '+', $url);
@@ -636,48 +646,113 @@ EOF;
       $tmpFilename = "/var/www/tmp/" . $rand . ".png";
       file_put_contents($tmpFilename, $data);
 
+      
       $img = imagecreatefrompng($tmpFilename);
+
+      //imagecolortransparent($img, imagecolorallocate($img, 0, 0, 0));
       imagealphablending($img, true);
       imagesavealpha($img, true);
+      
+      $converted = array();
+      $ww = imagesx($img);
+      $hh = imagesy($img);
+      for ($xx = 0; $xx < $ww; $xx++) {
+        //echo "x: {$xx}\n";
+        for ($yy = 0; $yy < $hh; $yy++) {
+          //echo "y: {$yy}\n";
+          $rgba = imagecolorat($img, $xx, $yy);
 
-      $w = imagesx($img);
-      $h = imagesy($img);
+          $a = ($rgba >> 24) & 0x7F;
+          $r = ($rgba >> 16) & 0xFF;
+          $g = ($rgba >> 8) & 0xFF;
+          $b = $rgba & 0xFF;
 
-      for ($i = 0; $i < $h; $i++) {
-        //$offset = $w * $i;
-        for ($j = 0; $j < $w; $j++) {
-          $pixel = imagecolorat($img, $i, $j);
-          // saturate a bit
+          $setPalette = false;
+          $newColor;
+          if (isset($palette[$rgba])) {
+            // already converted
+            $newColor = $palette[$rgba];
+          } else {
+            // new color detected
+            $setPalette = true;
 
-          $r = ($pixel & 0x000000ff);
-          $g = ($pixel & 0x0000ff00) >> 8;
-          $b = ($pixel & 0x00ff0000) >> 16;
-          $a = ($pixel & 0xff000000) >> 24;
+            // convert to HSV
+            // https://www.rapidtables.com/convert/color/rgb-to-hsv.html
+            /////////////////////////////////////////////////////////////////////////////
+            $max = max($r, $g, $b);
+            $min = min($r, $g, $b);
+            $chroma = $max - $min;
 
-          $grey = $this->calcAvg($r, $g, $b);
-          if (abs($grey) <= 1E-9) {
-            continue; // skip for blank pixels
+            $h = 0;
+            $s = 0;
+            $v = $max / 255.0;
+            if ( abs($chroma) > 1e-6 ) {
+              $s = $chroma / (float) $max;
+
+              $inner;
+              switch ($max) {
+                case $r:
+                  $inner = ( intval(($g - $b) / (float) $chroma) % 6);
+                  break;
+                case $g:
+                  $inner = ((($b - $r) / (float) $chroma) + 2);
+                  break;
+                case $b:
+                  $inner = ((($r - $g) / (float) $chroma) + 4);
+                  break;
+              }
+              $h = 60 * $inner;
+            }
+
+            // edit in HSV
+            /////////////////////////////////////////////////////////////////////////////
+            $s *= 0.6; //slightly desaturate for import effect
+
+            // convert back to rgb
+            // https://www.rapidtables.com/convert/color/hsv-to-rgb.html
+            /////////////////////////////////////////////////////////////////////////////
+            $c = $v * $s;
+            $x = $c * (1 - abs( (($h / 60) % 2) - 1));
+            $m = $v - $c;
+            $rp = 0;
+            $gp = 0;
+            $bp = 0;
+            if ($h < 60) {
+              $rp = $c;
+              $gp = $x;
+            } else if ($h < 120) {
+              $rp = $x;
+              $gp = $c;
+            } else if ($h < 180) {
+              $gp = $c;
+              $bp = $x;
+            } else if ($h < 240) {
+              $gp = $x;
+              $bp = $c;
+            } else if ($h < 300) {
+              $rp = $x;
+              $bp = $c;
+            } else { //if ($h < 360) {
+              $rp = $c;
+              $bp = $x;
+            }
+            $r = intval(($rp + $m) * 255);
+            $b = intval(($gp + $m) * 255);
+            $g = intval(($bp + $m) * 255);
+
+            $newColor = imagecolorallocatealpha($img, $r, $g, $b, $a);
           }
 
-          $mod = $grey * 0.1;
-          $r = floor( $r * $mod ) & 0xff;
-          $g = floor( $g * $mod ) & 0xff;
-          $b = floor( $b * $mod ) & 0xff;;
-          //$g = floor( ($grey * $mod * $g) / 255);
-          //$b = floor( ($grey * $mod * $b) / 255) & 0xff;
-
-          $color = imagecolorallocatealpha($img, $r, $g, $b, $a);
-          imagesetpixel($img, $i, $j, $color);
-          //$pixel = $r & ($g << 8) & ($b << 16) & ($a << 24);
-          //imagecolorset($img, $pixel, $r, $g, $b, $a);
-          //echo "inside loop";
+          if ($setPalette) {
+            $palette[$rgba] = $newColor;
+          }
+          //$newColor = imagecolorallocatealpha($img, 0, 255, 255, $a);
+          imagesetpixel($img, $xx, $yy, $newColor);
         }
-        
       }
 
-      //imagefill($img, 0, 0, imagecolorallocate($img, 0, 127, 127));
       imagepng($img, "/var/www/tmp/" . $rand . "_mod.png");
-      
+
       $encoded = base64_encode(file_get_contents("/var/www/tmp/" . $rand . "_mod.png"));
       $this->data_url = "data:image/png;base64," . $encoded;
     } catch (Exception $e) {

@@ -6,12 +6,12 @@
     $end = date("Y-m-d", strtotime("+7 months"));
 
     $cacheFilename = "/var/www/tmp/holidays.json";
-    $stat = stat($cacheFilename);
+    $stat = @stat($cacheFilename);
 
     // cache file if file not cached OR if cached file is older than 1 day
     if (!$stat || $stat["mtime"] < strtotime('-1 day'))  {
-      $cmd = "curl https://www.hebcal.com/hebcal?cfg=json\&v=1\&maj=on\&yto=on\&start=$start\&end=$end > $cacheFilename";
-      exec($cmd, $output, $retval);
+      `curl https://www.hebcal.com/hebcal?cfg=json\&v=1\&maj=on\&yto=on\&start={$start}\&end={$end} > {$cacheFilename}`;
+      //exec($cmd, $output, $retval);
 
       //file_put_contents($cacheFilename, $res);
     }

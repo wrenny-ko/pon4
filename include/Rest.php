@@ -44,8 +44,8 @@ class Rest {
   private array $auths;
   private string $logFilename;
   private RestLogEntry $logEntry;
-  private array $data;
-  private array $responseFields;
+  private $data;
+  private $responseFields;
   private int $successCode;
   private $perms;
 
@@ -58,6 +58,14 @@ class Rest {
     $this->responseFields = array();
     $this->successCode = 200;
     $this->perms = null;
+  }
+
+  public function __destruct() {
+    if (!!$this->perms) {
+      $this->perms->disconnect();
+    }
+    $this->data = null;
+    $this->responseFields = null;
   }
 
   public function setMethod($method) {
