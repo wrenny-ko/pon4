@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="css/user.css" type="text/css">
   <link rel="stylesheet" href="css/login.css" type="text/css">
   <link rel="stylesheet" href="css/signup.css" type="text/css">
+  <link rel="stylesheet" href="css/tictactoe.css" type="text/css">
 
   <script src="js/jquery-3.7.1.min.js"></script>
   <script src="js/axios.min.js"></script>
@@ -47,4 +48,9 @@
   <div class="page hidden" id="signup-page">
     <?php require_once "../include/page/signup.php";?>
   </div>
+  <?php if ($perms->hasBeta()) { ?>
+    <div class="page hidden" id="tictactoe-page">
+      <?php require_once "../include/page/tictactoe.php";?>
+    </div>
+  <?php } ?>
 </body>

@@ -6,6 +6,7 @@ import { Log } from './log.js';
 import { User } from './user.js';
 import { Login } from './login.js';
 import { Signup } from './signup.js';
+import { TicTacToe } from './tictactoe.js';
 
 class App {
   pages = {};
@@ -20,6 +21,10 @@ class App {
     this.pages['log'] = new Log();
     this.pages['login'] = new Login();
     this.pages['signup'] = new Signup();
+
+    if ($('#role-beta').length) {
+      this.pages['tictactoe'] = new TicTacToe();
+    }
   }
 
   run() {
@@ -32,18 +37,6 @@ class App {
       return false;
     });
 
-/*
-    const navs = document.getElementsByClassName('site-nav');
-    for (const [i, nav] of Object.entries(navs)) {
-      nav.addEventListener('click', (event) => {
-        const newPath = event.srcElement.parentElement.id.split('-')[2];
-        event.preventDefault();
-        history.pushState( {} , 'Pon 4', '/' + newPath );
-        App.route(this);
-        return false;
-      });
-    }
-*/
     document.addEventListener('click', (event) => {
       let a = event.target.closest('a');
       if(a && a.classList.contains('site-nav')) {

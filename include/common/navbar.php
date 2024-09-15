@@ -26,6 +26,14 @@
         <span class="tooltip-text">Leaderboard</span>
       </a>
     </div>
+    <?php if ($perms->hasBeta()) { ?>
+      <div class="tictactoe-nav">
+        <a href="/tictactoe" id="nav-to-tictactoe" class="site-nav">
+          <img src="icon/octothorp.png" class="icon nav-entry" alt="tictactoe"/>
+          <span class="tooltip-text">Tic Tac Toe</span>
+        </a>
+      </div>
+    <?php } ?>
     <?php if ($perms->hasTech() || $perms->hasAdmin()) { ?>
       <div class="log-nav">
         <a href="/log" id="nav-to-log" class="site-nav">

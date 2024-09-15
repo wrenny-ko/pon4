@@ -9,7 +9,7 @@
     </div>
     <div class="signup-input-field">
       <div class="signup-field-label">Email</div>
-      <input type="text" class="signup-text-input signup-input-email" name="email" maxlength="40"/>
+      <input type="email" class="signup-text-input signup-input-email" name="email" maxlength="40"/>
     </div>
     <div class="signup-input-field">
       <div class="signup-field-label">Password (alphanumeric)</div>

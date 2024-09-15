@@ -1,0 +1,160 @@
+.tictactoe-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  row-gap: 20px;
+  width: 80%;
+  height: 100%;
+}
+
+.tictactoe-board {
+  display: flex;
+  width: 304px;
+  height: 304px;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: column;
+  row-gap: 2px;
+  background-color: black;
+}
+
+.tictactoe-row {
+  display: flex;
+  width: 304px;
+  column-gap: 2px;
+  align-items: center;
+  justify-content: space-between;
+  height: 100px;
+}
+
+.tictactoe-controls {
+  display: flex;
+  align-content: center;
+}
+
+.player-icons {
+  display: flex;
+  column-gap: 20px;
+}
+
+.player-icon {
+  background-color: white;
+  width: 100px;
+  height: 100px;
+}
+
+.player-icon-tiny {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: 38px;
+  left: 38px;
+}
+
+.player-avatar {
+  height: 50px;
+  width: 50px;
+  background-color: white;
+  border-radius: 6px;
+}
+
+.clickable {
+  transition: background-color 0.4s;
+  transition: cursor 0.4s;
+}
+
+.clickable:hover:not([disabled]) {
+  background-color: rgba(191,127,191, 1);
+  cursor: pointer;
+}
+
+.players-info {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  column-gap: 70px;
+  width: 504px;
+  background-color: #dc8add;
+}
+
+.player-info {
+  width: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 10px;
+}
+
+.player-info-icons {
+  position: relative;
+  width: 60px;
+  height: 50px;
+}
+
+.difficulty-container {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  row-gap: 2px;
+}
+
+.difficulty-slider {
+  width: 100%;
+  height: 5px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  transition: opacity .2s;
+  position: relative;
+}
+
+.difficulty-word {
+  width: 100%;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.tictactoe-modal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.choose-player-modal {
+  width: 500px;
+  height: 525px;
+  background-color: #dc8add;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  row-gap: 20px;
+}
+
+.tictactoe-message-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 304px;
+}
+
+.tictactoe-error-box {
+  display: flex;
+  color: red;
+  justify-content: center;
+  align-items: center;
+  width: 304px;
+}
+
+.tictactoe-reset-board-button {
+  width: 120px;
+  height: 25px;
+}
