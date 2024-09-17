@@ -5,7 +5,7 @@ COPY .env /var/www/.env
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get upgrade -y; apt-get install -y \
     apache2 php8.3 php8.3-mysql libapache2-mod-php8.3 \
-    php-mysql php-gd curl
+    php-mysql php-gd php-curl
 
 # php and apache settings
 RUN <<EOF
@@ -25,6 +25,9 @@ RUN <<EOF
   # enable error logging
   sed -i 's@log_errors.*@log_errors = On@' /etc/php/8.3/apache2/php.ini
   sed -i 's@error_log.*@error_log = /dev/stderr@' /etc/php/8.3/apache2/php.ini
+
+  # enable php curl extension
+  sed -i 's/;extension=curl/extension=curl/g' /etc/php/8.3/apache2/php.ini
 
   # enable apache modules
   a2enmod php8.3

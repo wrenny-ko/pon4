@@ -68,7 +68,7 @@ export class Scribble {
 
       const sa = $('.scribble-author')[0];
       sa.innerHTML = scribble.username;
-      sa.href = "user?username=" + scribble.username;//TODO SPA this
+      sa.href = "user?username=" + scribble.username;
 
       const st = $('.scribble-title')[0];
 
@@ -82,7 +82,7 @@ export class Scribble {
       this.syncScribble();
     })
     .catch( error => {
-      console.log(error.response);  //TODO show error on page
+      console.log(error.response);
     });
   }
 
@@ -127,7 +127,7 @@ export class Scribble {
         }
       })
       .catch(error => {
-        console.log(error.response);  //TODO show error on page
+        console.log(error.response);
       });
   }
 
@@ -146,7 +146,7 @@ export class Scribble {
         $('.avatar')[0].src = res.data.scribble.data_url;
       })
       .catch( error => {
-        console.log(error.response); //TODO show error on page
+        console.log(error.response);
       });
   }
 
@@ -167,7 +167,7 @@ export class Scribble {
         document.dispatchEvent(ev);
       })
       .catch( error => {
-        console.log(error.response); //TODO show error on page
+        console.log(error.response);
       }
     );
   }
@@ -182,7 +182,7 @@ export class Scribble {
 
     await axios.put("api/scribble.php?action=like&id=" + id)
       .catch( error => {
-        console.log(error.response); //TODO show error on page
+        console.log(error.response);
     });
 
     let ev = document.createEvent("HTMLEvents");
@@ -202,7 +202,7 @@ export class Scribble {
 
     const response = await axios.put("api/scribble.php?action=dislike&id=" + id)
       .catch( error => {
-        console.log(error.response); //TODO show error on page
+        console.log(error.response);
       }
     );
 

@@ -10,10 +10,13 @@
 
     // cache file if file not cached OR if cached file is older than 1 day
     if (!$stat || $stat["mtime"] < strtotime('-1 day'))  {
-      `curl https://www.hebcal.com/hebcal?cfg=json\&v=1\&maj=on\&yto=on\&start={$start}\&end={$end} > {$cacheFilename}`;
-      //exec($cmd, $output, $retval);
-
-      //file_put_contents($cacheFilename, $res);
+      $url = "https://www.hebcal.com/hebcal?cfg=json&v=1&maj=on&yto=on&start=$start&end=$end";
+      $c = curl_init();
+      curl_setopt($c, CURLOPT_URL, $url);
+      curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+      $res = curl_exec($c);
+      curl_close($c);
+      file_put_contents($cacheFilename, $res);
     }
 
     $file = file_get_contents($cacheFilename);

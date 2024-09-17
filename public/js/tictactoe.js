@@ -85,7 +85,7 @@ export class TicTacToe {
     $('.difficulty-slider')[0].removeEventListener('input', this.setDifficultyWord);
     for (let i = 0; i <= 8; i++) {
       const posEl = $('#position-' + i)[0];
-      posEl.removeAttribute('src'); // clear any placed tile
+      posEl.removeAttribute('src'); // clear a placed tile
       posEl.removeEventListener('click', this.postMove);
       posEl.removeAttribute('disabled');
     }
@@ -183,39 +183,6 @@ export class TicTacToe {
       }).catch( err => {
         $('.tictactoe-error-box')[0].innerText = err.response.data.error;
       });
-  }
-
-  async postStartGame(e) {
-    e.preventDefault();
-
-    const difficulty = $('.difficulty-word')[0];
-    if (difficulty.classList.contains('updated')) {
-      await axios.post('api/tictactoe.php?action=set_difficulty&difficulty=' + difficulty.innerText);
-      difficulty.classList.remove('updated');
-    }
-
-    const ch = e.target.id.substring(14);
-
-    axios.post('/api/tictactoe.php?action=start_game&player_char=' + ch)
-      .then( res => {
-        $('.tictactoe-error-box')[0].innerText = '';
-
-        const b = res.data.board;
-        for (let i = 0; i <= 8; i++) {
-          const ch = b.substring(i, i + 1);
-          const imgEl = $('#position-' + i)[0];
-          imgEl.src = 'icon/' + ch + '.png';
-          if (ch === '-') {
-            imgEl.removeAttribute('disabled');
-          } else {
-            imgEl.setAttribute('disabled', '');
-          }
-        }
-      }).catch( err => {
-        $('.tictactoe-error-box')[0].innerText = err.response.data.error;
-      });
-
-    return false;
   }
 
   async postMove(e) {

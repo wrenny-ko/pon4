@@ -1,21 +1,20 @@
 <?php
 
+const WinConditions = array(
+  0x1c0, // 111 000 000 top row
+  0x038, // 000 111 000 middle row
+  0x007, // 000 000 111 bottom row
+  0x124, // 100 100 100 left column
+  0x092, // 010 010 010 middle column
+  0x049, // 001 001 001 right column
+  0x111, // 100 010 001 upper left to lower right diagonal
+  0x054, // 001 010 100 upper right to lower left diagonal
+);
+
 class TicTacToeBoard {
   private $board;
   private $x;
   private $o;
-
-  private $winConditions = array(
-    0x1c0, // 111 000 000 top row
-    0x038, // 000 111 000 middle row
-    0x007, // 000 000 111 bottom row
-    0x124, // 100 100 100 left column
-    0x092, // 010 010 010 middle column
-    0x049, // 001 001 001 right column
-    0x111, // 100 010 001 upper left to lower right diagonal
-    0x054, // 001 010 100 upper right to lower left diagonal
-  );
-
 
   public function __construct($b = null, $x = null, $o = null) {
     $this->board = $b ?? 0;
@@ -101,7 +100,7 @@ class TicTacToeBoard {
   }
 
   public function checkWin() {
-    foreach ($this->winConditions as $condMask) {
+    foreach (WinConditions as $condMask) {
       if (($this->x & $condMask) === $condMask) {
         return "x";
       }
@@ -242,7 +241,6 @@ class TicTacToeTreeNode {
     }
   }
 
-  // defaults to 
   public function chooseNextMoveMask($difficulty = "easy") {
     $pick = 0;
     switch ($difficulty) {
@@ -288,30 +286,3 @@ class TicTacToeTreeNode {
     return $pick;
   }
 }
-/*
-$b = new TicTacToeBoard();
-echo $b->getBoardString() . "\n";
-//$b->moveMask(0x001, "x");
-//$b->moveMask(0x100, "x");
-//$b->moveMask(0x004, "x");
-//$b->moveMask(0x008, "o");
-//$b->moveMask(0x010, "x");
-//$b->moveMask(0x020, "o");
-
-//$b->moveMask(0x080, "x");
-//echo $b->getBoardString() . "\n";
-$ch = "x";
-while (true) {
-  $g = new TicTacToeTreeNode($b, $ch, "easy");
-  $g->populate();
-  $b->moveMask($g->chooseNextMoveMask(), $ch);
-  echo $b->getBoardString() . "\n";
-
-  $ch = $b->getOppositePlayer($ch);
-
-  $winner = $b->checkWin();
-  if (!!$winner) {
-    echo "winner: {$winner}\n";
-    break;
-  }
-}*/
