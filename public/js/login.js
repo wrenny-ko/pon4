@@ -4,9 +4,10 @@ export class Login {
 
   async setup() {
     this.resetForm();
-    $('.login-submit-button')[0].addEventListener('click', this.postLogin);
+    $('.login-submit-button')[0].addEventListener('click', Login.postLogin);
     $('.login-input-username')[0].addEventListener('keyup', this.validateInput);
     $('.login-input-password')[0].addEventListener('keyup', this.validateInput);
+    $('.login-form')[0].addEventListener('keyup', this.checkEnter);
   }
 
   async again() {
@@ -15,9 +16,10 @@ export class Login {
 
   teardown() {
     this.resetForm();
-    $('.login-submit-button')[0].removeEventListener('click', this.postLogin);
+    $('.login-submit-button')[0].removeEventListener('click', Login.postLogin);
     $('.login-input-username')[0].removeEventListener('keyup', this.validateInput);
     $('.login-input-password')[0].removeEventListener('keyup', this.validateInput);
+    $('.login-form')[0].removeEventListener('keyup', this.checkEnter);
   }
 
   resetForm() {
@@ -49,7 +51,13 @@ export class Login {
     }
   }
 
-  async postLogin(e) {
+  checkEnter(e) {
+    if (e.keyCode === 13 && !$('.login-submit-button')[0].disabled) {
+      Login.postLogin(e);
+    }
+  }
+
+  static async postLogin(e) {
     e.preventDefault();
 
     const username = $('.login-input-username')[0].value;
