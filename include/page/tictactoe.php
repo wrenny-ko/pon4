@@ -23,7 +23,7 @@
   <div class="players-info">
     <div class="player-info">
       <div class="player-info-icons">
-        <img class="player-avatar" id="user-player-avatar" src="<?= $avatar["data_url"];?>" icon/>
+        <img class="player-avatar" id="user-player-avatar" src="<?= $avatarSrc;?>" icon/>
         <img class="player-icon-tiny" src="icon/x.png" icon>
       </div>
       <?= $username; ?>

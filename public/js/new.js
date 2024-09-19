@@ -6,6 +6,9 @@ export class Draw {
   async setup() {
     $('.submit-button')[0].setAttribute('disabled', '');
 
+    $('.input-title')[0].addEventListener('input', Draw.titleInputEventHandler);
+    $('.title-modal')[0].addEventListener('keyup', Draw.titleSubmitKeyHandler);
+
     // beta test, backend requires auth
     if ($('#role-beta').length) {
       $('.import-button')[0].setAttribute('disabled', '');
@@ -24,25 +27,13 @@ export class Draw {
 
   async again() {
     this.teardown();
-    $('.submit-button')[0].setAttribute('disabled', '');
-
-    // beta test, backend requires auth
-    if ($('#role-beta').length) {
-      $('.import-button')[0].setAttribute('disabled', '');
-      $('.input-import-id')[0].value = '';
-
-      $('.import-button')[0].addEventListener('click', this.importBase);
-      $('.input-import-id')[0].addEventListener('keyup', this.validateID);
-
-      const imer = $('.import-error')[0];
-      imer.classList.add('hidden');
-      imer.innerText = '';
-    }
-
-    this.scribble();
+    this.setup();
   }
 
   teardown() {
+    $('.input-title')[0].removeEventListener('input', Draw.titleInputEventHandler);
+    $('.title-modal')[0].removeEventListener('keyup', Draw.titleSubmitKeyHandler);
+
     // beta test, backend requires auth
     if ($('#role-beta').length) {
       $('.import-button')[0].removeEventListener('click', this.importBase);
@@ -57,12 +48,18 @@ export class Draw {
     return;
   }
 
-  setupListeners() {
-    if (this.once) {
-      return;
+  static titleInputEventHandler(e) {
+    if (e.target.value) {
+      Draw.enablePostButton();
+    } else {
+      Draw.disablePostButton();
     }
+  }
 
-    this.once = true;
+  static titleSubmitKeyHandler(e) {
+    if (e.keyCode === 13 && !$('.title-button').disabled) {
+      Draw.post(e);
+    }
   }
 
   scribble() {
@@ -197,33 +194,10 @@ export class Draw {
       return !d.some(ch => ch !== 0);
     }
 
-    function showTitleModal() {
-      $('.title-modal')[0].classList.remove('hidden');
-    }
-
-    function hideTitleModal() {
-      $('.title-modal')[0].classList.add('hidden');
-    }
-
-    function clearTitleInput() {
-      const t = $('.input-title')[0];
-      t.value = '';
-    }
-
-    function disablePostButton() {
-      const tb = $('.title-button')[0];
-      tb.setAttribute('disabled', 'true');
-    }
-
-    function enablePostButton() {
-      const tb = $('.title-button')[0];
-      tb.removeAttribute('disabled');
-    }
-
     function close() {
       enable();
-      clearTitleInput();
-      hideTitleModal();
+      Draw.clearTitleInput();
+      Draw.hideTitleModal();
       if (isBlank()) {
         $('.submit-button')[0].setAttribute('disabled', '');
       }
@@ -234,54 +208,8 @@ export class Draw {
       disable();
 
       drawThumb();
-      showTitleModal();
-      disablePostButton();
-
-      const it = document.getElementsByClassName('input-title')[0];
-      it.addEventListener('input', (event) => {
-        if (event.target.value) {
-          enablePostButton();
-        } else {
-          disablePostButton();
-        }
-      });
-    }
-
-    async function post(e) {
-      e.preventDefault();
-
-      const t = $('.input-title')[0];
-      if (t.value === '') {
-        return;
-      }
-
-      hideTitleModal();
-
-      const formData = new FormData();
-      const scribble = JSON.stringify({
-        title: t.value,
-        data_url: ctx.canvas.toDataURL(),
-      })
-      formData.append('scribble', scribble)
-
-      await axios.post('api/scribble.php?action=upload', formData, {
-        headers: {
-          'content-type': 'multipart/form-data'
-        }
-      })
-      .then( res => {
-        // navigate to the new scribble's page
-        history.pushState( {} , 'Pon 4', '/scribble?id=' + res.data.data.id);
-        let ev = document.createEvent("HTMLEvents");
-        ev.initEvent("approute", true, true);
-        ev.eventName = "approute";
-        e.srcElement.dispatchEvent(ev);
-      }).catch( err => {
-        setErrorMsg('Error: ' + err.response.data.error); // show error message
-        enable(); // hide the spinner and allow the buttons to be pressed again
-      });
-
-      return false; // this is so the normal form handler doesn't resume after
+      Draw.showTitleModal();
+      Draw.disablePostButton();
     }
 
     if (!this.once) {
@@ -291,7 +219,7 @@ export class Draw {
       sb.addEventListener('click', submit);
 
       const tb = $('.title-button')[0];
-      tb.addEventListener('click', post);
+      tb.addEventListener('click', Draw.post);
 
       const ctm = $('.close-title-modal')[0];
       ctm.addEventListener('click', close);
@@ -335,6 +263,70 @@ export class Draw {
         imer.classList.remove('hidden');
         imer.innerText = err.response.data.error;
       });
+
+    return false;
+  }
+
+  static showTitleModal() {
+    $('.title-modal')[0].classList.remove('hidden');
+  }
+
+  static hideTitleModal() {
+    $('.title-modal')[0].classList.add('hidden');
+  }
+
+  static clearTitleInput() {
+    const t = $('.input-title')[0];
+    t.value = '';
+  }
+
+  static disablePostButton() {
+    const tb = $('.title-button')[0];
+    tb.setAttribute('disabled', 'true');
+  }
+
+  static enablePostButton() {
+    const tb = $('.title-button')[0];
+    tb.removeAttribute('disabled');
+  }
+
+  static async post(e) {
+    e.preventDefault();
+
+    const t = $('.input-title')[0];
+    if (t.value === '') {
+      return;
+    }
+
+    Draw.hideTitleModal();
+
+    const c = $('.pad')[0];
+    const ctx = c.getContext('2d');
+
+    const formData = new FormData();
+    const scribble = JSON.stringify({
+      title: t.value,
+      data_url: ctx.canvas.toDataURL(),
+    })
+    formData.append('scribble', scribble)
+
+    await axios.post('api/scribble.php?action=upload', formData, {
+      headers: {
+        'content-type': 'multipart/form-data'
+      }
+    })
+    .then( res => {
+      $('.scribble-data')[0].setAttribute('data', JSON.stringify(res.data.scribble));
+      // navigate to the new scribble's page
+      history.pushState( {} , 'Pon 4', '/scribble?id=' + res.data.scribble.id);
+      let ev = document.createEvent("HTMLEvents");
+      ev.initEvent("approute", true, true);
+      ev.eventName = "approute";
+      e.srcElement.dispatchEvent(ev);
+    }).catch( err => {
+      setErrorMsg('Error: ' + err.response.data.error); // show error message
+      enable(); // hide the spinner and allow the buttons to be pressed again
+    });
 
     return false;
   }

@@ -9,14 +9,22 @@ class DatabaseHandler {
 
   private function loadIni() {
     $env = parse_ini_file($_SERVER["DOCUMENT_ROOT"] . '/../.env');
+    if ($env === false) {
+      return "Error parsing database credentials.";
+    }
+
     $this->hostname = $env["DB_HOSTNAME"];
     $this->username = $env["DB_USERNAME"];
     $this->password = $env["DB_PASSWORD"];
     $this->dbname   = $env["DB_NAME"];
+    return "";
   }
 
-  protected function connect() {
-    $this->loadIni();
+  public function connect() {
+    $msg = $this->loadIni();
+    if (!!$msg) {
+      return "ini error. " . $msg;
+    }
 
     $pdo;
     try {
@@ -26,15 +34,21 @@ class DatabaseHandler {
       $this->pdo = $pdo;
     } catch(PDOException $e) {
       return "PDO error.";
+    } finally {
+      $pdo = null;
     }
     return "";
   }
 
-  public function disconnect() {
+  public function __destruct() {
     $this->pdo = null;
   }
 
-  public function __destruct() {
-    $this->pdo = null;
+  public function getPDO() {
+    return $this->pdo;
+  }
+
+  public function setPDO($pdo) {
+    $this->pdo = $pdo;
   }
 }

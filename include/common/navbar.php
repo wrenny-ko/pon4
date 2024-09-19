@@ -2,9 +2,20 @@
   $search = $_GET["search"] ?? "";
 
   $sc = new Scribble();
-  $sc->readScribbleAvatar($username); // $username defined in include/common/includes.php
-  $avatar = $sc->getScribble();
+  $sc->setPDO($pdo);
+
+  $msg = $sc->readScribbleAvatar($username); // $username defined in include/common/includes.php
+  if (!$msg) {
+    $avatar = $sc->getScribble();
+  } else {
+    $avatar = array("data_url" => "");
+  }
+
+  $avatarSrc = $avatar["data_url"];
+
+  $sc->setPDO(null);
   $sc = null;
+  $avatar = null;
 ?>
 <div class="navbar">
   <div class="nav-left">
@@ -53,7 +64,7 @@
     <?php require_once $_SERVER["DOCUMENT_ROOT"] . "/../include/common/holidays.php"; ?>
     <div class="account nav-entry">
       <a href="<?= ($username !== "anonymous") ? "/user?username=" . $username : "/login";?>" id="<?= ($username !== "anonymous") ? "nav-to-user" : "nav-to-login";?>" class="account site-nav">
-        <img class="avatar" src="<?= $avatar["data_url"];?>" icon/>
+        <img class="avatar" src="<?= $avatarSrc;?>" icon/>
         <?= ($username !== "anonymous") ? $username : "Login";?>
       </a>
       <?php if ($perms->hasBeta()) { ?>

@@ -31,8 +31,6 @@ export class Scribble {
     if (setAv.length > 0) {
       setAv[0].addEventListener('click', this.setAvatar);
     }
-
-    document.addEventListener('metasync', this.syncScribble);
   }
 
   again() {
@@ -41,94 +39,110 @@ export class Scribble {
   }
 
   teardown() {
-    document.removeEventListener('metasync', this.syncScribble);
     $('.scribble-image')[0].src = '';
     $('.scribble-author')[0].innerHTML = '';
     $('.scribble-title')[0].innerText = '';
     $('.likes')[0].innerText = '';
     $('.dislikes')[0].innerText = '';
     $('.ratio')[0].innerText = '';
+    $('.scribble-data')[0].setAttribute('data', '');
+  }
+
+  renderScribble(scribble) {
+    $('.scribble-image')[0].src = scribble.data_url;
+
+    const sa = $('.scribble-author')[0];
+    sa.innerHTML = scribble.username;
+    sa.href = "user?username=" + scribble.username;
+
+    // crude text wrap
+    let title = scribble.title;
+    if (title.length > 15) {
+      title = title.substr(0, 14) + "\n" + title.substr(15);
+    }
+    $('.scribble-title')[0].innerText = title;
+
+    const likes = $('.likes')[0];
+    likes.innerText = scribble.likes + " Likes";
+    if (scribble.user_data.liked) {
+      likes.classList.add('liked');
+    } else {
+      likes.classList.remove('liked');
+    }
+
+    const dislikes = $('.dislikes')[0];
+    dislikes.innerText = scribble.dislikes + " Dislikes";
+    if (scribble.user_data.disliked) {
+      dislikes.classList.add('disliked');
+    } else {
+      dislikes.classList.remove('disliked');
+    }
+
+    const ratio = +scribble.likes - (+scribble.dislikes);
+    const r = $('.ratio').first();
+    r.text("Ratio: " + ratio.toString());
+    if (ratio > 0) {
+      r.css('color', '#26a269');
+    } else if (ratio < 0) {
+      r.css('color', '#e80d0d');
+    } else {
+      r.css('color', '#e66100');
+    }
   }
 
   async populateScribble() {
-    const sp = new URLSearchParams(window.location.search);
-    const id = sp.get('id');
+    const dataString = $('.scribble-data')[0].getAttribute('data');
+    if (dataString !== '') {
+      const scribble = JSON.parse(dataString);
+      this.renderScribble(scribble);
+      Scribble.syncScribble(scribble);
+    } else {
+      const sp = new URLSearchParams(window.location.search);
+      let id = sp.get('id');
 
-    if (id === '') {
-      history.pushState( {} , 'Pon 4', '/scribble?id=1' + res.data.id);
-      id = 1;
-    }
-
-    axios.get('api/scribble.php?action=get&id=' + id)
-    .then( response => {
-      const scribble = response.data.scribble;
-
-      const si = $('.scribble-image')[0];
-      si.src = scribble.data_url;
-
-      const sa = $('.scribble-author')[0];
-      sa.innerHTML = scribble.username;
-      sa.href = "user?username=" + scribble.username;
-
-      const st = $('.scribble-title')[0];
-
-      // crude text wrap
-      let title = scribble.title;
-      if (title.length > 15) {
-        title = title.substr(0, 14) + "\n" + title.substr(15);
+      if (!id) {
+        history.pushState( {} , 'Pon 4', '/scribble?id=1');
+        id = 1;
       }
-      st.innerText = title;
 
-      this.syncScribble();
-    })
-    .catch( error => {
-      console.log(error.response);
-    });
+      const response = await axios.get('api/scribble.php?action=get&id=' + id)
+        .catch( error => {
+          console.log(error.response);
+        });
+
+      const scribble = response.data.scribble;
+      this.renderScribble(scribble);
+      Scribble.syncScribble(scribble);
+    }
   }
 
-  async syncScribble() {
-    const sp = new URLSearchParams(window.location.search);
-    const id = sp.get('id');
-
-    if (id === '') {
-      history.pushState( {} , 'Pon 4', '/scribble?id=1' + res.data.id);
-      id = 1;
+  static syncScribble(metadata) {
+    const likes = $('.likes')[0];
+    likes.innerText = metadata.likes + " Likes";
+    if (metadata.user_data.liked) {
+      likes.classList.add('liked');
+    } else {
+      likes.classList.remove('liked');
     }
 
-    axios.get('api/scribble.php?action=get_metadata&id=' + id)
-      .then( response => {
-        const meta = response.data.metadata;
+    const dislikes = $('.dislikes')[0];
+    dislikes.innerText = metadata.dislikes + " Dislikes";
+    if (metadata.user_data.disliked) {
+      dislikes.classList.add('disliked');
+    } else {
+      dislikes.classList.remove('disliked');
+    }
 
-        const likes = $('.likes')[0];
-        likes.innerText = meta.likes + " Likes";
-        if (meta.user_data.liked) {
-          likes.classList.add('liked');
-        } else {
-          likes.classList.remove('liked');
-        }
-
-        const dislikes = $('.dislikes')[0];
-        dislikes.innerText = meta.dislikes + " Dislikes";
-        if (meta.user_data.disliked) {
-          dislikes.classList.add('disliked');
-        } else {
-          dislikes.classList.remove('disliked');
-        }
-
-        const ratio = +meta.likes - (+meta.dislikes);
-        const r = $('.ratio').first();
-        r.text("Ratio: " + ratio.toString());
-        if (ratio > 0) {
-          r.css('color', '#26a269');
-        } else if (ratio < 0) {
-          r.css('color', '#e80d0d');
-        } else {
-          r.css('color', '#e66100');
-        }
-      })
-      .catch(error => {
-        console.log(error.response);
-      });
+    const ratio = +metadata.likes - (+metadata.dislikes);
+    const r = $('.ratio').first();
+    r.text("Ratio: " + ratio.toString());
+    if (ratio > 0) {
+      r.css('color', '#26a269');
+    } else if (ratio < 0) {
+      r.css('color', '#e80d0d');
+    } else {
+      r.css('color', '#e66100');
+    }
   }
 
   async setAvatar() {
@@ -180,16 +194,12 @@ export class Scribble {
       return;
     }
 
-    await axios.put("api/scribble.php?action=like&id=" + id)
+    const response = await axios.put("api/scribble.php?action=like&id=" + id)
       .catch( error => {
         console.log(error.response);
     });
 
-    let ev = document.createEvent("HTMLEvents");
-    ev.initEvent("metasync", true, true);
-    ev.eventName = "metasync";
-    document.dispatchEvent(ev);
-
+    Scribble.syncScribble(response.data.metadata);
   }
 
   async dislike() {
@@ -206,9 +216,6 @@ export class Scribble {
       }
     );
 
-    let ev = document.createEvent("HTMLEvents");
-    ev.initEvent("metasync", true, true);
-    ev.eventName = "metasync";
-    document.dispatchEvent(ev);
+    Scribble.syncScribble(response.data.metadata);
   }
 }

@@ -17,20 +17,9 @@ class Perms extends DatabaseHandler {
     $this->roles["moderator"]   = false;
     $this->roles["tech"]  = false;
     $this->roles["beta"]  = false;
-
-    $err = $this->connect();
-    if (!!$err) {
-      return "Database connect error. " . $err;
-    }
-
-    $this->readPerms();
   }
 
-  public function __destruct() {
-    $this->pdo = null;
-  }
-
-  protected function readPerms() {
+  public function readPerms() {
     $sql = "SELECT * FROM perms INNER JOIN users ON users.username = ? AND perms.user = users.id";
     try {
       $statement = $this->pdo->prepare($sql);
@@ -47,9 +36,10 @@ class Perms extends DatabaseHandler {
       }
     } catch (PDOException $e) {
       return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
@@ -102,9 +92,10 @@ class Perms extends DatabaseHandler {
       }
     } catch (PDOException $e) {
       return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
@@ -118,9 +109,10 @@ class Perms extends DatabaseHandler {
       }
     } catch (PDOException $e) {
       return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 }

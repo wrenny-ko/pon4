@@ -63,7 +63,8 @@ export class Search {
           newTitle.innerText = title;
           newCard.appendChild(newTitle);
 
-          //TODO add author name and avatar
+          newCard.setAttribute('data', JSON.stringify(scribble));
+          //TODO display author name and avatar, likes/dislikes
         }
       })
       .catch((error) => {

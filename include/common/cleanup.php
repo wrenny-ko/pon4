@@ -1,9 +1,8 @@
 <?php
-  $perms->disconnect(); // close the PDO object
-  $perms = null;        // include/Perms.php
-  $username = null;     // include/Perms.php
+  $pdo = null;
 
-  $nextHoliday = null;  // include/common/holidays.php
+  $username = null;     // include/common/includes.php
+  $perms = null;        // include/common/includes.php
 
   $search = null;       // include/common/navbar.php
   $avatar = null;       // include/common/navbar.php

@@ -14,5 +14,22 @@ require_once $prefix . "../include/common/initSession.php";
 
 $prefix = null;
 
+$dbHandler = new DatabaseHandler();
+$msg = $dbHandler->connect();
+if (!!$msg) {
+  $dbHandler->setPDO(null);
+  http_response_code(500);
+  echo "Database error.";
+  exit;
+}
+
+$pdo = $dbHandler->getPDO();
+
+$dbHandler->setPDO(null);
+$dbHandler = null;
+
 $username = $_SESSION['username'] ?? "anonymous";
 $perms    = $_SESSION['perms']    ?? new Perms($username);
+$perms->setPDO($pdo);
+$perms->readPerms(); // on error, soft fails to default values of all deny
+$perms->setPDO(null);

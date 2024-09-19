@@ -4,16 +4,24 @@
   require_once "../../include/common/includes.php";
 
   require_once "../../include/Rest.php";
-  //require_once "../../include/TicTacToe.php"; // call this in common/includes.php, before session_start()
+
+  // call this instead in common/includes.php, before session_start() for session object deserialization
+  ///////////////
+  //require_once "../../include/TicTacToe.php";
+
   require_once "../../include/TicTacToeController.php";
 
   $ctrl = new TicTacToeController();
-  $ctrl->handle();
+  //$ctrl->setPDO($pdo); // $pdo declared in include/common/includes.php
 
-/*
-  // TODO refactor Rest.php to not call exit()
-  $ctrl->disconnect();
+  $msg = $ctrl->run();
+  if (!!$msg) {
+    $ctrl->error($msg);
+  } else {
+    $ctrl->success();
+  }
+
+  //$ctrl->setPDO(null);
   $ctrl = null;
 
   require_once "../../include/common/cleanup.php";
-*/

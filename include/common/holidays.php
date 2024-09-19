@@ -46,3 +46,4 @@
     </div>
   </a>
 </div>
+<?php $nextHoliday = null; ?>

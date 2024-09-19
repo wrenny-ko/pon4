@@ -9,12 +9,16 @@
   require_once "../../include/ScribbleController.php";
 
   $ctrl = new ScribbleController();
-  $ctrl->handle();
+  $ctrl->setPDO($pdo); // $pdo declared in include/common/includes.php
 
-/*
-  // TODO refactor Rest.php to not call exit()
-  $ctrl->disconnect();
+  $msg = $ctrl->run();
+  if (!!$msg) {
+    $ctrl->error($msg);
+  } else {
+    $ctrl->success();
+  }
+
+  $ctrl->setPDO(null);
   $ctrl = null;
 
   require_once "../../include/common/cleanup.php";
-*/

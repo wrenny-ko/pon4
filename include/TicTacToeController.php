@@ -46,61 +46,74 @@ class TicTacToeController {
   private $rest;
   private $action;
 
-  public function __construct() {
+  public function error($msg) {
+    $this->rest->error($msg);
+  }
+
+  public function success() {
+    $this->rest->success($this->action->value);
+  }
+
+  public function run() {
+    $msg = $this->init();
+    if (!!$msg) {
+      return $msg;
+    }
+
+    $msg = $this->handle();
+    if (!!$msg) {
+      return $msg;
+    }
+
+    return "";
+  }
+
+  public function init() {
     // set up first for logging/error response if needed
     $this->rest = new Rest();
     $this->rest->setupLogging("api.log", "tictactoe");
 
     if (!isset($_SERVER["REQUEST_METHOD"])) {
-      $this->rest->error("request method not set");
+      return "request method not set";
     }
 
     $method;
     try {
       $method = RequestMethod::from($_SERVER["REQUEST_METHOD"]);
     } catch (\Throwable $e) {
-      $this->rest->error("request method not supported");
+      return "request method not supported";
     }
 
     $this->rest->setMethod($method);
 
     if (!isset($_GET["action"])) {
-      $this->rest->error("requires an 'action' query string");
+      return "requires an 'action' query string";
     }
 
     $action;
     try {
       $action = TicTacToeAction::from($_GET["action"]);
     } catch (\Throwable $e) {
-      $this->rest->error("action not supported ");
+      return "action not supported ";
     }
     $this->action = $action;
 
     $this->rest->setLoginRequired( self::RouteMap[$action->value]["login_required"] );
     $this->rest->setAuths( self::RouteMap[$action->value]["auth_levels"] );
 
-    $this->rest->compareMethod(self::RouteMap[$action->value]["method"] );
-    $this->rest->auth();
-
-    /*
-    $err = $this->connect();
-    if (!!$err) {
-      return "Database connect error. " . $err;
+    $msg = $this->rest->compareMethod(self::RouteMap[$action->value]["method"] );
+    if (!!$msg) {
+      return $msg;
     }
-    */
-  }
 
-    public function __destruct() {
-    $this->rest = null;
-    //$this->pdo = null;
+    $msg = $this->rest->auth();
+    if (!!$msg) {
+      return $msg;
+    }
   }
 
   public function handle() {
-    $msg = $this->handleAction();
-    if (!!$msg) {
-      $this->rest->error($msg);
-    }
-    $this->rest->success($this->action->value);
+    return $this->handleAction();
   }
 
   private function handleAction() {

@@ -47,6 +47,7 @@ class Rest {
   private $data;
   private $responseFields;
   private int $successCode;
+  private string $successMessage;
   private $perms;
 
   // Construct this after calling session_start()
@@ -57,13 +58,10 @@ class Rest {
     $this->data = array();
     $this->responseFields = array();
     $this->successCode = 200;
-    $this->perms = null;
+    $this->successMessage = "";
   }
 
   public function __destruct() {
-    if (!!$this->perms) {
-      $this->perms->disconnect();
-    }
     $this->data = null;
     $this->responseFields = null;
   }
@@ -96,9 +94,13 @@ class Rest {
     $this->successCode = $code;
   }
 
+  public function setSuccessMessage($msg) {
+    $this->successMessage = $msg;
+  }
+
   public function compareMethod($method) {
     if ($this->method !== $method) {
-      $this->error("method does not match expected (" . $method->value . ")");
+      return "method does not match expected (" . $method->value . ")";
     }
   }
 
@@ -111,20 +113,18 @@ class Rest {
 
   public function getRequiredQueryField($field) {
     if (!isset($_GET[$field])) {
-      $this->error("requires a '$field' query field.");
+      return "requires a '$field' query field.";
     }
     return $_GET[$field];
   }
 
   public function checkRequiredQueryFieldPresent($field) {
     if (!isset($_GET[$field])) {
-      $this->error("requires a '$field' query field.");
+      return "requires a '$field' query field.";
     }
   }
 
   public function getUsername() {
-    require_once "common/initSession.php"; // session_start();
-
     $username = "anonymous";
     if (isset($_SESSION["username"])) {
       $username = $_SESSION["username"];
@@ -161,22 +161,17 @@ class Rest {
   }
 
   public function error($msg) {
-    if (!!$this->perms) {
-      $this->perms->disconnect();
-    }
-
     http_response_code(400);
 
     $this->logEntry->setSuccess("FAILED");
     $this->log($msg);
 
     echo json_encode(array("error" => $msg));
-    exit();
   }
 
-  public function success($msg) {
-    if (!!$this->perms) {
-      $this->perms->disconnect();
+  public function success($msg = "") {
+    if (!$msg) {
+      $msg = $this->successMessage;
     }
 
     http_response_code($this->successCode);
@@ -195,40 +190,41 @@ class Rest {
     }
 
     echo json_encode($response);
-    exit();
   }
 
   // exits with error reporting if unauthorized
   public function auth() {
     // automatically authorize route if no login required
     if (!$this->loginRequired) {
-      return;
+      return "";
     }
 
     // if login required, check for session token (username)
     if (!isset($_SESSION['username'])) {
-      $this->error("Route requires login.");
+      return "Route requires login.";
     }
 
-    $username = $_SESSION['username'];
+    $username = $_SESSION['username'] ?? "anonymous";
     //$this->logEntry->setUsername($username);
-    $this->perms = new Perms($username);
 
     if (count($this->auths) === 0) {
-      return; // authorize if no auth roles required
+      return ""; // authorize if no auth roles required
     } else {
       // allow access if user has perms for at least one of the listed levels
+      $perms = $_SESSION['perms'] ?? new Perms($username);
       $authorized = false;
       foreach ($this->auths as $level) {
-        if ($this->perms->hasLevel($level)) {
+        if ($perms->hasLevel($level)) {
           $authorized = true;
           break 1;
         }
       }
+      $perms = null;
 
       if (!$authorized) {
-        $this->error("unauthorized");
+        return "unauthorized";
       }
     }
+    return "";
   }
 }

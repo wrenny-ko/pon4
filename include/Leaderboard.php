@@ -1,5 +1,4 @@
 <?php
-require_once("DatabaseHandler.php");
 
 enum LeaderboardColumn: string {
   case Username = "username";
@@ -21,20 +20,6 @@ class Leaderboard extends DatabaseHandler {
   protected $numFilteredEntries;
   protected $board;
 
-  public function __construct() {
-    $err = $this->connect();
-    if (!!$err) {
-      return "Database connect error. " . $err;
-    }
-
-    $this->readMaxRows();
-    $this->readNumTotalEntries();
-  }
-
-  public function __destruct() {
-    $this->pdo = null;
-  }
-
   public function getBoard() {
     return $this->board;
   }
@@ -43,24 +28,26 @@ class Leaderboard extends DatabaseHandler {
     return $this->maxRows;
   }
 
-  protected function readMaxRows() {
-    $sql = "SELECT max_rows FROM leaderboard";
+  protected function read() {
+    $sql = "SELECT max_display_rows, total_entries FROM leaderboard";
 
     $statement;
     try {
       $statement = $this->pdo->query($sql);
+      $row = $statement->fetch();
+      $this->maxRows = $row["max_display_rows"];
+      $this->numTotalEntries = $row["total_entries"];
     } catch (PDOException $e) {
       return "Database query error.";
+    } finally {
+      $statement = null;
     }
 
-    $this->maxRows = $statement->fetchColumn();
-
-    $statement = null;
     return "";
   }
 
   protected function writeMaxRows($num) {
-    $sql = "UPDATE leaderboard SET max_rows = ? WHERE id = 1";
+    $sql = "UPDATE leaderboard SET max_display_rows = ? WHERE id = 1";
 
     $statement;
     try {
@@ -71,24 +58,29 @@ class Leaderboard extends DatabaseHandler {
       }
     } catch (PDOException $e) {
       return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
-  protected function readNumTotalEntries() {
-    $sql = "SELECT COUNT(*) FROM users";
-
+  protected function updateTotalEntries() {
+    $statement;
     try {
+      $sql = "SELECT COUNT(*) FROM users";
       $statement = $this->pdo->query($sql);
-
       $this->numTotalEntries = $statement->fetchColumn();
+
+      $sql = "UPDATE leaderboard SET total_entries = ?";
+      $statement = $this->pdo->prepare($sql);
+      $statement = $this->pdo->execute(array($this->numTotalEntries));
     } catch (PDOException $e) {
       return "Database query error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
@@ -97,29 +89,45 @@ class Leaderboard extends DatabaseHandler {
     //   select all scribbles by them, calc totals
     //   sort by sortcol in sortdir, truncate by max numrows
     //   set class variable
-    $sql = "SELECT * FROM users";
-
+    $users = array();
     $statement;
     try {
+      $sql = "SELECT * FROM users";
       $statement = $this->pdo->prepare($sql);
       if ( !$statement->execute(array()) ) {
         return "Database lookup failed.";
       }
+
+      while ($row = $statement->fetch()) {
+        $users[] = array(
+          "username" => array( // the datatables column header name
+            "username" => $row["username"] // the datatables column text data
+          )
+        );
+      }
     } catch (PDOException $e) {
       return "Database error.";
-    }
-
-    $users = array();
-    while ($row = $statement->fetch()) {
-      $users[] = array("username" => $row["username"]);
+    } finally {
+      $statement = null;
     }
 
     foreach ($users as &$stats) {
-      // find how many scribbles the given user created
-      $sql = "SELECT COUNT(*) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
+      $statement;
       try {
+        $scrib = new Scribble();
+        $scrib->setPDO($this->pdo);
+        $err = $scrib->readScribbleAvatar($stats["username"]["username"]);
+        $scrib->setPDO(null);
+        if (!!$err) {
+          return "Can't read scribble avatar. " . $err;
+        }
+        $stats["username"]["data_url"] = $scrib->getScribble()["data_url"]; // avatar url
+        $scrib = null;
+
+        // find how many scribbles the given user created
+        $sql = "SELECT COUNT(*) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
         $statement = $this->pdo->prepare($sql);
-        if ( !$statement->execute(array($stats["username"])) ) {
+        if ( !$statement->execute(array($stats["username"]["username"])) ) {
           return "Database lookup failed.";
         }
 
@@ -133,7 +141,7 @@ class Leaderboard extends DatabaseHandler {
           WHERE scribbles.user = uploaders.id AND scribbles.id = everyone.avatar
 EOF;
         $statement = $this->pdo->prepare($sql);
-        if ( !$statement->execute(array($stats["username"])) ) {
+        if ( !$statement->execute(array($stats["username"]["username"])) ) {
           return "Database lookup failed.";
         }
 
@@ -142,7 +150,7 @@ EOF;
         // find how many total likes the given user has
         $sql = "SELECT SUM(likes) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
         $statement = $this->pdo->prepare($sql);
-        if ( !$statement->execute(array($stats["username"])) ) {
+        if ( !$statement->execute(array($stats["username"]["username"])) ) {
           return "Database lookup failed.";
         }
 
@@ -152,7 +160,7 @@ EOF;
         // find how many total dislikes the given user has
         $sql = "SELECT SUM(dislikes) FROM scribbles INNER JOIN users WHERE users.username = ? AND users.id = scribbles.user";
         $statement = $this->pdo->prepare($sql);
-        if ( !$statement->execute(array($stats["username"])) ) {
+        if ( !$statement->execute(array($stats["username"]["username"])) ) {
           return "Database lookup failed.";
         }
 
@@ -160,6 +168,8 @@ EOF;
         $stats["dislikes"] = is_string($dislikes) ? $dislikes : 0;
       } catch (PDOException $e) {
         return "Database error.";
+      } finally {
+        $statement = null;
       }
 
       // calculate the like/dislike ratio
@@ -178,7 +188,6 @@ EOF;
     $this->board = $leaderboard;
     $this->numFilteredEntries = $this->maxRows;
 
-    $statement = null;
     return "";
   }
 }

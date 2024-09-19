@@ -13,21 +13,6 @@ class Scribble extends DatabaseHandler {
   protected $numWipedAvatars;
   protected $user_data;
 
-  public function __construct() {
-    $err = $this->connect();
-    if (!!$err) {
-      return "Database connect error. " . $err;
-    }
-  }
-
-  public function __destruct() {
-    $this->pdo = null;
-  }
-
-  public function disconnect() {
-    $this->pdo = null;
-  }
-
   public function getDataURL() {
     return $this->data_url;
   }
@@ -37,82 +22,30 @@ class Scribble extends DatabaseHandler {
   }
 
   protected function createScribble($username, $title, $data_url) {
-    $sql = "SELECT id FROM users WHERE username = ?";
     $statement;
     try {
-      $statement = $this->pdo->prepare($sql);
-      if ( !$statement->execute(array($username)) ) {
-        return "Database username lookup failed.";
-      }
-
-      $uid = 1;
-      if ($statement->rowCount() !== 0) {
-        $row = $statement->fetch();
-        $uid = $row['id'];
-      }
-
-      $sql = "INSERT INTO scribbles (user, title, data_url) VALUES (?, ?, ?)";
+      $sql = "INSERT INTO scribbles (user, title, data_url) SELECT id, ?, ? FROM users WHERE username = ?";
       $statement = $this->pdo->prepare($sql);
 
-      if ( !$statement->execute(array($uid, htmlspecialchars($title), htmlspecialchars($data_url))) ) {
+      if ( !$statement->execute(array(htmlspecialchars($title), htmlspecialchars($data_url), $username)) ) {
         return "Database insert failed.";
       }
 
       $this->id = $this->pdo->lastInsertId();
+      $this->data_url = $data_url;
+      $this->title = $title;
+      $this->likes    = 0;
+      $this->dislikes = 0;
+      $this->user_data = array(
+        "liked" => false,
+        "disliked" => false
+      );
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
-    return "";
-  }
-
-  protected function readUserID($username) {
-    $sql = "SELECT id FROM users WHERE username = ?";
-
-    $statement;
-    try {
-      $statement = $this->pdo->prepare($sql);
-      if ( !$statement->execute(array($username)) ) {
-        return "Database lookup failed.";
-      }
-
-      if ($statement->rowCount() === 0) {
-        return "User does not exist.";
-      }
-
-      $row = $statement->fetch();
-      $this->userID = $row['id'];
-    } catch (PDOException $e) {
-        return "Database execute error.";
-    }
-
-    $statement = null;
-    return "";
-  }
-
-  protected function readAvatarID($username) {
-    $sql = "SELECT avatar FROM users WHERE username = ?";
-
-    $statement;
-    try {
-      $statement = $this->pdo->prepare($sql);
-
-      if ( !$statement->execute(array($username)) ) {
-        return "Database lookup failed.";
-      }
-
-      if ($statement->rowCount() === 0) {
-        return "User does not exist.";
-      }
-
-      $row = $statement->fetch();
-      $this->avatarID = $row['avatar'];
-    } catch (PDOException $e) {
-        return "Database execute error.";
-    }
-
-    $statement = null;
     return "";
   }
 
@@ -144,9 +77,10 @@ EOF;
       $this->dislikes = $row['dislikes'];
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
@@ -181,9 +115,10 @@ EOF;
       }
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
@@ -194,8 +129,8 @@ EOF;
       'title'    => $this->title,
       'data_url' => $this->data_url,
       'likes'    => $this->likes,
-      'dislikes' => $this->dislikes
-      //'comments' => $this->comments
+      'dislikes' => $this->dislikes,
+      'user_data' => $this->user_data
     );
   }
 
@@ -210,18 +145,19 @@ EOF;
     );
   }
 
-  public function readMetadata($id, $username) {
-    $err = $this->readScribble($id);
-    if (!!$err) {
-      return "Error reading scribble. " . $err;
+  public function readMetadata($id, $username, $readScribble = true) {
+    if ($readScribble) {
+      $err = $this->readScribble($id);
+      if (!!$err) {
+        return "Error reading scribble. " . $err;
+      }
     }
 
     $user_data = array();
 
-    $sql = "SELECT * FROM likes JOIN users WHERE likes.scribble = ? AND likes.user = users.id AND users.username = ?";
-
     $statement;
     try {
+      $sql = "SELECT * FROM likes JOIN users WHERE likes.scribble = ? AND likes.user = users.id AND users.username = ?";
       $statement = $this->pdo->prepare($sql);
       if ( !$statement->execute(array($id, $username)) ) {
         return "Database update failed.";
@@ -242,21 +178,42 @@ EOF;
       $this->user_data = $user_data;
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
   public function readScribbleAvatar($username) {
-    $error = $this->readAvatarID($username);
-    if (!!$error) {
-      return "Error reading avatar ID. " . $error;
-    }
+    $statement;
+    try {
+      $sql = <<<EOF
+      SELECT users.username, scribbles.id, scribbles.likes, scribbles.dislikes,
+             scribbles.title, scribbles.data_url
+      FROM scribbles INNER JOIN users ON users.avatar = scribbles.id
+      WHERE users.username = ?
+EOF;
+      $statement = $this->pdo->prepare($sql);
+      if ( !$statement->execute(array($username)) ) {
+        return "Database lookup failed.";
+      }
 
-    $error = $this->readScribble($this->avatarID);
-    if (!!$error) {
-      return "Error reading scribble avatar. " . $error;
+      if ($statement->rowCount() === 0) {
+        return "Scribble does not exist.";
+      }
+
+      $row = $statement->fetch();
+      $this->id       = $row['id'];
+      $this->username = $row['username'];
+      $this->title    = htmlspecialchars_decode($row['title']);
+      $this->data_url = htmlspecialchars_decode($row['data_url']);
+      $this->likes    = $row['likes'];
+      $this->dislikes = $row['dislikes'];
+    } catch (PDOException $e) {
+        return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
     return "";
@@ -264,10 +221,9 @@ EOF;
 
   // sets all user avatars with $id to the default avatar
   protected function setDefaultAvatars($id) {
-    $sql = "UPDATE users SET avatar = 1 WHERE avatar = ?";
-
     $statement;
     try {
+      $sql = "UPDATE users SET avatar = 1 WHERE avatar = ?";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($id)) ) {
@@ -277,9 +233,10 @@ EOF;
       $this->numWipedAvatars = $statement->rowCount();
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
@@ -300,20 +257,18 @@ EOF;
       return "Couldn't update avatars. " . $error;
     }
 
-    $statement = null;
     return "";
   }
 
-  // returns an array of scribble ids and titles
-  protected function getScribbleList() {
-    $sql = "SELECT users.username, scribbles.id, scribbles.title, scribbles.data_url 
-     FROM scribbles INNER JOIN users ON users.id = scribbles.user";
-
+  protected function getScribbleList($searchingUsername) {
     $statement;
     try {
+      $sql = "SELECT users.username, scribbles.id, scribbles.likes, scribbles.dislikes,
+                     scribbles.title, scribbles.data_url
+              FROM scribbles INNER JOIN users ON users.id = scribbles.user";
       $statement = $this->pdo->prepare($sql);
 
-      if ( !$statement->execute() ) {
+      if ( !$statement->execute(array()) ) {
         return "Database lookup failed.";
       }
 
@@ -323,27 +278,39 @@ EOF;
       }
 
       $list = array();
+      $total = 1;
       while ($row = $statement->fetch()) {
-        $row["title"] = htmlspecialchars_decode($row['title']);
+        $row["title"] = htmlspecialchars_decode($row["title"]);
+
+        $msg = $this->readMetadata($row["id"], $searchingUsername, false);
+        if (!!$msg) {
+          return "Error reading metadata. " . $msg;
+        }
+
+        $row["user_data"] = $this->user_data;
+
         $list[$row["id"]] = $row;
+        if ($total++ >= 30) {
+          break;
+        }
       }
 
       $this->scribbleList = $list;
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
-  // returns an array of scribble ids and titles
-  protected function getScribbleListByUsername($username) {
-    $sql = "SELECT users.username, scribbles.id, scribbles.title, scribbles.data_url 
-     FROM scribbles INNER JOIN users ON users.id = scribbles.user WHERE users.username = ?";
-
+  protected function getScribbleListByUsername($username, $searchingUsername) {
     $statement;
     try {
+      $sql = "SELECT users.username, scribbles.id, scribbles.likes, scribbles.dislikes,
+                     scribbles.title, scribbles.data_url
+              FROM scribbles INNER JOIN users ON users.id = scribbles.user WHERE users.username = ?";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($username)) ) {
@@ -356,29 +323,39 @@ EOF;
       }
 
       $list = array();
+      $total = 1;
       while ($row = $statement->fetch()) {
-        $row['title'] = htmlspecialchars_decode($row['title']);
-        $list[] = $row;
+        $row["title"] = htmlspecialchars_decode($row["title"]);
+
+        $msg = $this->readMetadata($row["id"], $searchingUsername, false);
+        if (!!$msg) {
+          return "Error reading metadata. " . $msg;
+        }
+
+        $row["user_data"] = $this->user_data;
+        $list[$row["id"]] = $row;
+        if ($total++ >= 30) {
+          break;
+        }
       }
 
       $this->scribbleList = $list;
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
-    // returns an array of scribble ids and titles
-  protected function getScribbleSearchTitle($search) {
-    $sch = '%' . htmlspecialchars($search) . '%';
-
-    $sql = "SELECT users.username, scribbles.id, scribbles.title, scribbles.data_url 
-     FROM scribbles INNER JOIN users ON users.id = scribbles.user WHERE scribbles.title LIKE ?";
-
+  protected function getScribbleSearchTitle($search, $searchingUsername) {
     $statement;
     try {
+      $sch = '%' . htmlspecialchars($search) . '%';
+      $sql = "SELECT users.username, scribbles.id, scribbles.likes, scribbles.dislikes,
+                     scribbles.title, scribbles.data_url
+              FROM scribbles INNER JOIN users ON users.id = scribbles.user WHERE scribbles.title LIKE ?";
       $statement = $this->pdo->prepare($sql);
       if ( !$statement->execute(array($sch)) ) {
         return "Database lookup failed.";
@@ -390,25 +367,36 @@ EOF;
       }
 
       $list = array();
+      $total = 1;
       while ($row = $statement->fetch()) {
-        $row['title'] = htmlspecialchars_decode($row['title']);
-        $list[] = $row;
+        $row["title"] = htmlspecialchars_decode($row["title"]);
+
+        $msg = $this->readMetadata($row["id"], $searchingUsername, false);
+        if (!!$msg) {
+          return "Error reading metadata. " . $msg;
+        }
+
+        $row["user_data"] = $this->user_data;
+        $list[$row["id"]] = $row;
+        if ($total++ >= 30) {
+          break;
+        }
       }
 
       $this->scribbleList = $list;
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
   protected function removeLike($id, $username) {
-    $sql = "DELETE l FROM likes l JOIN users u ON u.username = ? WHERE u.id = l.user AND l.scribble = ?";
-
     $statement;
     try {
+      $sql = "DELETE l FROM likes l JOIN users u ON u.username = ? WHERE u.id = l.user AND l.scribble = ?";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($username, $id)) ) {
@@ -426,19 +414,20 @@ EOF;
       }
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
   protected function addLike($id, $username) {
-    // create like
-    // example of using a subquery
-    $sql = "INSERT INTO likes (user, scribble) SELECT id, ? FROM users WHERE users.username = ? AND ? IN (SELECT id FROM scribbles WHERE scribbles.id = ?)";
-
     $statement;
     try {
+      // create like
+      $sql = "INSERT INTO likes (user, scribble)
+              SELECT id, ? FROM users
+              WHERE users.username = ? AND ? IN (SELECT id FROM scribbles WHERE scribbles.id = ?)";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($id, $username, $id, $id)) ) {
@@ -454,7 +443,8 @@ EOF;
       }
 
       // remove dislike, if any
-      $sql = "DELETE dl FROM dislikes dl JOIN users u ON u.username = ? WHERE u.id = dl.user AND dl.scribble = ?";
+      $sql = "DELETE dl FROM dislikes dl JOIN users u ON u.username = ? 
+              WHERE u.id = dl.user AND dl.scribble = ?";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($username, $id)) ) {
@@ -472,18 +462,19 @@ EOF;
       }
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
   protected function like($id, $username) {
-    // check if the like already exists
-    $sql = "SELECT * FROM likes JOIN users WHERE likes.scribble = ? AND users.username = ? AND likes.user = users.id";
-
     $statement;
     try {
+      // check if the like already exists
+      $sql = "SELECT * FROM likes JOIN users
+              WHERE likes.scribble = ? AND users.username = ? AND likes.user = users.id";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($id, $username)) ) {
@@ -498,14 +489,16 @@ EOF;
       return $this->removeLike($id, $username); // like exists
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
   }
 
   protected function removeDislike($id, $username) {
-    $sql = "DELETE dl FROM dislikes dl JOIN users u ON u.username = ? WHERE u.id = dl.user AND dl.scribble = ?";
-
     $statement;
     try {
+      $sql = "DELETE dl FROM dislikes dl JOIN users u ON u.username = ?
+              WHERE u.id = dl.user AND dl.scribble = ?";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($username, $id)) ) {
@@ -523,19 +516,20 @@ EOF;
       }
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
   protected function addDislike($id, $username) {
-    // create dislike
-    // example of using a subquery
-    $sql = "INSERT INTO dislikes (user, scribble) SELECT id, ? FROM users WHERE users.username = ? AND ? IN (SELECT id FROM scribbles WHERE scribbles.id = ?)";
-
     $statement;
     try {
+      // create dislike
+      $sql = "INSERT INTO dislikes (user, scribble)
+              SELECT id, ? FROM users 
+              WHERE users.username = ? AND ? IN (SELECT id FROM scribbles WHERE scribbles.id = ?)";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($id, $username, $id, $id)) ) {
@@ -551,7 +545,8 @@ EOF;
       }
 
       // remove like, if any
-      $sql = "DELETE l FROM likes l JOIN users u ON u.username = ? WHERE u.id = l.user AND l.scribble = ?";
+      $sql = "DELETE l FROM likes l JOIN users u ON u.username = ?
+              WHERE u.id = l.user AND l.scribble = ?";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($username, $id)) ) {
@@ -570,18 +565,19 @@ EOF;
       }
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
   protected function dislike($id, $username) {
-    // check if the dislike already exists
-    $sql = "SELECT * FROM dislikes JOIN users WHERE dislikes.scribble = ? AND users.username = ? AND dislikes.user = users.id";
-
     $statement;
     try {
+      // check if the dislike already exists
+      $sql = "SELECT * FROM dislikes JOIN users 
+              WHERE dislikes.scribble = ? AND users.username = ? AND dislikes.user = users.id";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($id, $username)) ) {
@@ -596,14 +592,15 @@ EOF;
       return $this->removeDislike($id, $username);
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
   }
 
   protected function importScribble($id) {
-    $sql = "SELECT data_url FROM scribbles WHERE scribbles.id = ?";
-
     $statement;
     try {
+      $sql = "SELECT data_url FROM scribbles WHERE scribbles.id = ?";
       $statement = $this->pdo->prepare($sql);
       if ( !$statement->execute(array($id)) ) {
         return "Database lookup failed.";
@@ -617,11 +614,11 @@ EOF;
       $this->data_url = htmlspecialchars_decode($row['data_url']);
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
     $this->processForImport();
-
-    $statement = null;
     return "";
   }
 
@@ -635,8 +632,6 @@ EOF;
 
   // recolors (fades)
   private function processForImport() {
-    require_once $_SERVER['DOCUMENT_ROOT'] . "/../include/common/util.php";
-
     try {
       $url = substr($this->data_url, 22); // strip out "data:image/png;base64,"
       str_replace(' ', '+', $url);
@@ -646,7 +641,6 @@ EOF;
       $tmpFilename = "/var/www/tmp/" . $rand . ".png";
       file_put_contents($tmpFilename, $data);
 
-      
       $img = imagecreatefrompng($tmpFilename);
 
       //imagecolortransparent($img, imagecolorallocate($img, 0, 0, 0));
@@ -751,10 +745,11 @@ EOF;
         }
       }
 
-      imagepng($img, "/var/www/tmp/" . $rand . "_mod.png");
+      imagepng($img, $tmpFilename);
 
-      $encoded = base64_encode(file_get_contents("/var/www/tmp/" . $rand . "_mod.png"));
+      $encoded = base64_encode(file_get_contents($tmpFilename));
       $this->data_url = "data:image/png;base64," . $encoded;
+      unlink($tmpFilename);
     } catch (Exception $e) {
       return "Error converting image for import. " . $e;
     }

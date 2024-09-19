@@ -22,62 +22,79 @@ class LeaderboardController extends Leaderboard {
   private $rest;
   private $action;
 
-  public function __construct() {
+  public function error($msg) {
+    $this->rest->error($msg);
+  }
+
+  public function success() {
+    $this->rest->success();
+  }
+
+  public function run() {
+    $msg = $this->init();
+    if (!!$msg) {
+      return $msg;
+    }
+
+    $msg = $this->handle();
+    if (!!$msg) {
+      return $msg;
+    }
+
+    return "";
+  }
+
+  public function init() {
     // set up first for logging/error response if needed
     $this->rest = new Rest();
     $this->rest->setupLogging("api.log", "leaderboard");
 
     if (!isset($_SERVER["REQUEST_METHOD"])) {
-      $this->rest->error("request method not set");
+      return "request method not set";
     }
 
     $method;
     try {
       $method = RequestMethod::from($_SERVER["REQUEST_METHOD"]);
     } catch (\Throwable $e) {
-      $this->rest->error("request method not supported");
+      return "request method not supported";
     }
 
     $this->rest->setMethod($method);
 
     if (!isset($_GET["action"])) {
-      $this->rest->error("requires an 'action' query string");
+      return "requires an 'action' query string";
     }
 
     $action;
     try {
       $action = LeaderboardAction::from($_GET["action"]);
     } catch (\Throwable $e) {
-      $this->rest->error("action not supported");
+      return "action not supported";
     }
     $this->action = $action;
 
     $this->rest->setLoginRequired( self::RouteMap[$action->value]["login_required"] );
     $this->rest->setAuths( self::RouteMap[$action->value]["auth_levels"] );
 
-    $this->rest->compareMethod(self::RouteMap[$action->value]["method"] );
-    $this->rest->auth();
-
-    $err = $this->connect();
-    if (!!$err) {
-      return "Database connect error. " . $err;
+    $msg = $this->rest->compareMethod(self::RouteMap[$action->value]["method"] );
+    if (!!$msg) {
+      return $msg;
     }
 
-    $this->readMaxRows();
-    $this->readNumTotalEntries();
-  }
+    $msg = $this->rest->auth();
+    if (!!$msg) {
+      return $msg;
+    }
 
-  public function __destruct() {
-    $this->rest = null;
-    $this->pdo = null;
+    $err = $this->read();
+    if (!!$err) {
+      return "Database read error. " . $err;
+    }
   }
 
   public function handle() {
-    $msg = $this->handleAction();
-    if (!!$msg) {
-      $this->rest->error($msg);
-    }
-    $this->rest->success($this->action->value);
+    return $this->handleAction();
   }
 
   private function handleAction() {
@@ -94,15 +111,19 @@ class LeaderboardController extends Leaderboard {
   }
 
   private function setMaxRows($maxRows) {
+    // if no max given, set default of 10
     $max = "10";
+
+    // if max given, validate int
     if (!!$maxRows) {
       if (!filter_var( $maxRows, FILTER_VALIDATE_INT, array('options' => array( 'min_range' => 0)) )) {
-        $this->rest->error("invalid max_rows value: requires integer greater than 0");
+        return "invalid max_rows value: requires integer greater than 0";
       }
       $max = $maxRows;
     }
 
     $this->writeMaxRows($max);
+    $this->rest->setSuccessMessage("set max rows to '$max'");
     return "";
   }
 
@@ -113,16 +134,16 @@ class LeaderboardController extends Leaderboard {
     $this->rest->setResponseField("recordsTotal", $this->numTotalEntries);
 
     if (!isset($_GET["order"])) {
-      $this->rest->error("invalid datatables query. sort order not present");
+      return "invalid datatables query. sort order not present";
     }
     $order = $_GET["order"];
 
     if (!isset($order[0])) {
-      $this->rest->error("invalid datatables query. sort order not present");
+      return "invalid datatables query. sort order not present";
     }
 
     if (!isset($order[0]["dir"])) {
-      $this->rest->error("invalid datatables query. order dir not present");
+      return "invalid datatables query. order dir not present";
     }
     $dir = $order[0]["dir"];
 
@@ -132,17 +153,17 @@ class LeaderboardController extends Leaderboard {
     } else if ($dir === "desc"){
       $sortDir = LeaderboardSortDir::Down;
     } else {
-      $this->rest->error("invalid datatables query. order dir not matched");
+      return "invalid datatables query. order dir not matched";
     }
 
     if (!isset($order[0]["name"])) {
-      $this->rest->error("invalid datatables query. order column name not present");
+      return "invalid datatables query. order column name not present";
     }
     $name = $order[0]["name"];
 
     $sortCol = LeaderboardColumn::tryFrom($name);
     if ($sortCol === null) {
-      $this->rest->error("invalid datatables query. order column name not matched");
+      return "invalid datatables query. order column name not matched";
     }
 
     $err = $this->populate($sortCol, $sortDir);
@@ -152,6 +173,6 @@ class LeaderboardController extends Leaderboard {
 
     $this->rest->setData($this->board);
     $this->rest->setResponseField("recordsFiltered", $this->numFilteredEntries);
-    $this->rest->success("sortCol: '" . $sortCol->value . "', sortDir: '" . $dir . "'");
+    $this->rest->setSuccessMessage("sortCol: '" . $sortCol->value . "', sortDir: '" . $dir . "'");
   }
 }

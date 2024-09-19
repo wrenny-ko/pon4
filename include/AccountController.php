@@ -34,43 +34,67 @@ class AccountController extends User {
   private $rest;
   private $action;
 
-  public function __construct() {
+  public function error($msg) {
+    $this->rest->error($msg);
+  }
+
+  public function success() {
+    $this->rest->success($this->action->value);
+  }
+
+  public function run() {
+    $msg = $this->init();
+    if (!!$msg) {
+      return $msg;
+    }
+
+    $msg = $this->handle();
+    if (!!$msg) {
+      return $msg;
+    }
+
+    return "";
+  }
+
+  public function init() {
     // set up first for logging/error response if needed
     $this->rest = new Rest();
     $this->rest->setupLogging("api.log", "account");
 
     if (!isset($_SERVER["REQUEST_METHOD"])) {
-      $this->rest->error("request method not set");
+      return "request method not set";
     }
 
     $method;
     try {
       $method = RequestMethod::from($_SERVER["REQUEST_METHOD"]);
     } catch (\Throwable $e) {
-      $this->rest->error("request method not supported");
+      return "request method not supported";
     }
     $this->rest->setMethod($method);
 
     if (!isset($_GET["action"])) {
-      $this->rest->error("requires an 'action' query string");
+      return "requires an 'action' query string";
     }
 
     $action;
     $action = AccountAction::tryFrom($_GET["action"]);
     if (!$action) {
-      $this->rest->error("action not supported");
+      return "action not supported";
     }
     $this->action = $action;
 
     $this->rest->setLoginRequired( self::RouteMap[$action->value]["login_required"] );
     $this->rest->setAuths( self::RouteMap[$action->value]["auth_levels"] );
 
-    $this->rest->compareMethod(self::RouteMap[$action->value]["method"] );
-    $this->rest->auth();
+    $msg = $this->rest->compareMethod(self::RouteMap[$action->value]["method"] );
+    if (!!$msg) {
+      return $msg;
+    }
 
-    $err = $this->connect();
-    if (!!$err) {
-      return "Database connect error. " . $err;
+    $msg = $this->rest->auth();
+    if (!!$msg) {
+      return $msg;
     }
   }
 
@@ -80,11 +104,7 @@ class AccountController extends User {
   }
 
   public function handle() {
-    $msg = $this->handleAction();
-    if (!!$msg) {
-      $this->rest->error($msg);
-    }
-    $this->rest->success($this->action->value);
+    return $this->handleAction();
   }
 
   private function handleAction() {
@@ -107,6 +127,20 @@ class AccountController extends User {
     return "action not found";
   }
 
+  private function setSessionPerms() {
+    $perms = new Perms($this->username);
+    $perms->setPDO($this->pdo);
+
+    $msg = $perms->readPerms();
+    $perms->setPDO(null);
+    if (!!$msg) {
+      return "Error reading user perms.";
+    }
+
+    $_SESSION["perms"] = $perms;
+    return "";
+  }
+
   private function login() {
     if (!isset($_POST["username"])) {
       return "Requires a username.";
@@ -124,8 +158,12 @@ class AccountController extends User {
       return "Error logging in user. " . $err;
     }
 
-    $_SESSION['username'] = $_POST["username"];
-    $_SESSION['perms'] = new Perms($this->username);
+    $_SESSION["username"] = $_POST["username"];
+
+    $err = $this->setSessionPerms();
+    if (!!$err) {
+      return "Error setting user session perms. " . $err;
+    }
 
     return "";
   }
@@ -159,7 +197,11 @@ class AccountController extends User {
     }
 
     $_SESSION['username'] = $_POST["username"];
-    $_SESSION['perms'] = new Perms($this->username);
+
+    $err = $this->setSessionPerms();
+    if (!!$err) {
+      return "Error setting user session perms. " . $err;
+    }
 
     return "";
   }
@@ -171,14 +213,17 @@ class AccountController extends User {
     }
 
     $scrib = new Scribble();
+    $scrib->setPDO($this->pdo);
+
     $err = $scrib->readScribble($id);
+    $scrib->setPDO(null);
     if (!!$err) {
       return "Error reading scribble. " . $err;
     }
 
     $this->rest->setResponseField('scribble', $scrib->getScribble());
 
-    $scrib->disconnect();
+    $scrib = null;
     return "";
   }
 }

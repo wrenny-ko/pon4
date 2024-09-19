@@ -1,4 +1,5 @@
 <div class="scribble-center">
+  <div class="scribble-data hidden" data=""></div>
   <div class="scribble-container">
     <div class="scribble-content-top">
       <img class="scribble-image" src=""/>

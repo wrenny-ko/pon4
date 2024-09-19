@@ -41,6 +41,12 @@ class App {
       let a = event.target.closest('a');
       if(a && a.classList.contains('site-nav')) {
         event.preventDefault();
+
+        // if clicking to a scribble page from a scribble card, set data property
+        if (a.classList.contains('scribble-card')) {
+          $('.scribble-data')[0].setAttribute('data', a.getAttribute('data'));
+        }
+
         let path = a.href.split('/').slice(3).join('/');
         history.pushState( {} , 'Pon 4', '/' + path );
         App.route(this);
@@ -86,6 +92,13 @@ class App {
     if (app.currentPageName === pageName) {
       app.pages[pageName].again();
       return;
+    }
+
+    // if logged in, redirect login and signup pages
+    const navto = $('#nav-to-user');
+    if (['login', 'signup'].includes(pageName) && navto.length) {
+      history.replaceState( {} , 'User', '/user?username=' + navto.innerText );
+      pageName = 'user';
     }
 
     const sp = new URLSearchParams(window.location.search);

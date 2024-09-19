@@ -54,68 +54,11 @@ export class Leaderboard {
 
     this.once = true;
 
-    let avatarUsernameList = [];
-
-    function pushAvatar(data) {
-      avatarUsernameList.push(data);
-      return data;
-    }
-
-    let cachedAvatars = {};
-
-    async function cacheAvatars() {
-      let fetchList = [];
-
-      avatarUsernameList.forEach( name => {
-        if (cachedAvatars.hasOwnProperty(name)) {
-          return;
-        }
-        fetchList.push(name);
-      });
-
-      if (fetchList.length > 0) {
-        console.log("caching avatars for " + fetchList);
-        const response = await axios.get(
-          'api/scribble.php?action=get_avatars',
-          {
-            params: {
-              usernames: fetchList.join(',')
-            }
-          }
-        )
-
-        const avatars = response.data.avatars;
-        for (const [name, av] of Object.entries(avatars)) {
-          cachedAvatars[name] = av.data_url;
-        }
-      }
-    }
-
-    async function populateAvatars() {
-      await cacheAvatars();
-
-      $('.userfield').slice(1).each( (k, field) => {
-        const name = field.innerText;
-        const data_url = cachedAvatars[name];
-        const a = document.createElement('a');
-        a.classList.add('leaderboard-user')
-        a.classList.add('selectable');
-        a.href = 'user.php?username=' + name;
-
-        const img = document.createElement('img');
-        img.classList.add('leaderboard-avatar');
-        img.src = data_url;
-
-        const uname = document.createElement('div');
-        uname.classList.add('leaderboard-username');
-        uname.innerText = name;
-
-        a.appendChild(img);
-        a.appendChild(uname);
-
-        field.innerText = "";
-        field.appendChild(a);
-      });
+    function renderAvatar(data) {
+      return '<a href="user.php?username=' + data.username + '" class="leaderboard-user selectable">' + 
+               '<img class="leaderboard-avatar" src=' + data.data_url + '></img>' +
+               '<div class="leaderboard-username">' + data.username + '</div>' +
+             '</a>';
     }
 
     let table = new DataTable('#tablify-me', {
@@ -127,7 +70,7 @@ export class Leaderboard {
       columns: [
         { "data": "username", "name": "username", "title": "Username",
           "orderSequence": ["asc", "desc"], "className": "dt-center userfield",
-          "render": pushAvatar,
+          "render": renderAvatar,
         },
         { "data": "total_scribbles", "name": "total_scribbles", "title": "Total Scribbles",
           "orderSequence": ["desc", "asc"], "className": "dt-center"
@@ -146,11 +89,6 @@ export class Leaderboard {
         }
       ],
       order: [[1, 'desc']]
-    });
-
-    table.on('draw', function () {
-      //console.log('Redraw occurred at: ' + new Date().getTime());
-      populateAvatars();
     });
 
     $.fn.dataTable.ext.errMode = 'none'; //prevents the alert() calls

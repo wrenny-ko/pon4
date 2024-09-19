@@ -1,5 +1,4 @@
 <?php
-require_once("DatabaseHandler.php");
 
 class User extends DatabaseHandler {
   protected $username;
@@ -10,17 +9,6 @@ class User extends DatabaseHandler {
   private $emailMaxLength = 40;
   private $PasswordMinLength = 5;
   private $PasswordMaxLength = 40;
-
-  public function __construct() {
-    $err = $this->connect();
-    if (!!$err) {
-      return "Database connect error. " . $err;
-    }
-  }
-
-  public function __destruct() {
-    $this->pdo = null;
-  }
 
   protected function createUser($username, $email, $password) {
     $sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
@@ -37,9 +25,10 @@ class User extends DatabaseHandler {
       }
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return $error;
   }
 
@@ -58,9 +47,10 @@ class User extends DatabaseHandler {
       }
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
@@ -80,9 +70,10 @@ class User extends DatabaseHandler {
       }
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return $error;
   }
 
@@ -109,9 +100,10 @@ class User extends DatabaseHandler {
       }
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
     return "";
   }
 
@@ -126,9 +118,26 @@ class User extends DatabaseHandler {
       }
     } catch (PDOException $e) {
         return "Database execute error.";
+    } finally {
+      $statement = null;
     }
 
-    $statement = null;
+    return "";
+  }
+
+  // when a user is created, leaderboard table column needs incremented
+  protected function incrementLeaderboardTotalEntries() {
+    $statement;
+    try {
+      $sql = "UPDATE leaderboard SET total_entries = total_entries + 1";
+      $statement = $this->pdo->prepare($sql);
+      $statement = $this->pdo->execute(array($this->numTotalEntries));
+    } catch (PDOException $e) {
+      return "Database execute error.";
+    } finally {
+      $statement = null;
+    }
+
     return "";
   }
 
@@ -158,7 +167,7 @@ class User extends DatabaseHandler {
       return "Password check failed. " . $error;
     }
 
-    session_start();
+    @session_start();
     $_SESSION['username'] = $this->username;
   }
 
@@ -202,6 +211,9 @@ class User extends DatabaseHandler {
       return "Could not create user. " . $error;
     }
 
+    require_once("Leaderboard.php");
+    $ldr = new Leaderboard();
+    $ldr->incrementLeaderboardTotalEntries();
     $_SESSION['username'] = $this->username;
   }
 
