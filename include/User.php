@@ -11,9 +11,9 @@ class User extends DatabaseHandler {
   private $PasswordMaxLength = 40;
 
   protected function createUser($username, $email, $password) {
-    $sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
     $statement;
     try {
+      $sql = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
       $statement = $this->pdo->prepare($sql);
 
       $escaped_username = htmlspecialchars($username);
@@ -33,9 +33,9 @@ class User extends DatabaseHandler {
   }
 
   protected function checkUserExists($username) {
-    $sql = "SELECT * FROM users WHERE username = ?";
     $statement;
     try {
+      $sql = "SELECT * FROM users WHERE username = ?";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($username)) ) {
@@ -55,9 +55,9 @@ class User extends DatabaseHandler {
   }
 
   protected function checkUserExistsEmail($username, $email) {
-    $sql = "SELECT * FROM users WHERE username = ? OR email = ?";
     $statement;
     try {
+      $sql = "SELECT * FROM users WHERE username = ? OR email = ?";
       $statement = $this->pdo->prepare($sql);
 
       $error = "";
@@ -78,9 +78,9 @@ class User extends DatabaseHandler {
   }
 
   protected function comparePassword($username, $password) {
-    $sql = "SELECT password FROM users WHERE username = ?";
     $statement;
     try {
+      $sql = "SELECT password FROM users WHERE username = ?";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($username)) ) {
@@ -108,9 +108,9 @@ class User extends DatabaseHandler {
   }
 
   protected function updateAvatar($scribble_id, $username) {
-    $sql = "UPDATE users SET avatar = ? WHERE username = ?";
     $statement;
     try {
+      $sql = "UPDATE users SET avatar = ? WHERE username = ?";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($scribble_id, $username)) ) {

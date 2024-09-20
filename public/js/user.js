@@ -84,13 +84,14 @@ export class User {
         }
 
         cart.innerHTML = '';
-        const scribbles = response.data.scribbles;
+        let scribbles = Object.entries(response.data.scribbles);
 
         for (let i = scribbles.length - 1; i >= 0; i--) {
-          let scribble = scribbles[i];
+          let scribble = scribbles[i][1];
 
           const newCard = document.createElement('a');
           newCard.classList.add('scribble-card');
+          newCard.classList.add('site-nav');
           newCard.id = scribble.id;
           newCard.href = 'scribble?id=' + scribble.id;
           cart.appendChild(newCard);
@@ -110,9 +111,10 @@ export class User {
           newTitle.innerText = title;
           newCard.appendChild(newTitle);
 
-          cartAlt.classList.add('hidden');
-          cart.classList.remove('hidden');
+          newCard.setAttribute('data', JSON.stringify(scribble));
         }
+        cartAlt.classList.add('hidden');
+        cart.classList.remove('hidden');
       })
       .catch((error) => {
         cart.innerHTML = error.response.data.error;

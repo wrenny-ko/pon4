@@ -20,8 +20,9 @@ class Perms extends DatabaseHandler {
   }
 
   public function readPerms() {
-    $sql = "SELECT * FROM perms INNER JOIN users ON users.username = ? AND perms.user = users.id";
+    $statement;
     try {
+      $sql = "SELECT * FROM perms INNER JOIN users ON users.username = ? AND perms.user = users.id";
       $statement = $this->pdo->prepare($sql);
       if ( !$statement->execute(array($this->username)) ) {
         return "Database lookup failed.";
@@ -65,29 +66,12 @@ class Perms extends DatabaseHandler {
 
   // write one auth level
   protected function writeLevel($username, AuthLevel $level, $has) {
-    // first test for existence of a perms entry
-    $sql = "SELECT * FROM perms INNER JOIN users ON users.username = ? AND perms.user = users.id";
+    $statement;
     try {
+      $sql = "INSERT INTO perms (user, ?) SELECT id, ? FROM users WHERE users.username = ?
+              ON DUPLICATE KEY UPDATE ? = ?";
       $statement = $this->pdo->prepare($sql);
-
-      if ( !$statement->execute(array($this->username)) ) {
-        return "Database lookup failed.";
-      }
-
-      $sql = "";
-      $values = array();
-      if ($statement->rowCount() === 0) {
-        // no perms entry exists yet. create new perms row for the user
-        $sql = "INSERT INTO perms (user, ?) SELECT id, ? FROM users WHERE users.username = ?";
-        $values = array($level->value, $has, $username);
-      } else {
-        // perms entry exists. update it
-        $sql = "UPDATE perms SET ? = ? JOIN users WHERE users.username = ? AND perms.user = users.id";
-        $values = array($level->value, $has, $username);
-      }
-
-      $statement = $this->pdo->prepare($sql);
-      if ( !$statement->execute(array($this->username)) ) {
+      if ( !$statement->execute(array($level->value, $has, $username, $level->value, $has)) ) {
         return "Database store failed.";
       }
     } catch (PDOException $e) {

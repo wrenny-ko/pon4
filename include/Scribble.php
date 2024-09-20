@@ -50,15 +50,14 @@ class Scribble extends DatabaseHandler {
   }
 
   public function readScribble($id) {
-    $sql = <<<EOF
-    SELECT users.username, scribbles.id, scribbles.likes, scribbles.dislikes, 
-           scribbles.title, scribbles.data_url
-    FROM scribbles
-    INNER JOIN users ON users.id = scribbles.user  WHERE scribbles.id = ?
-EOF;
-
     $statement;
     try {
+      $sql = <<<EOF
+      SELECT users.username, scribbles.id, scribbles.likes, scribbles.dislikes, 
+             scribbles.title, scribbles.data_url
+      FROM scribbles
+      INNER JOIN users ON users.id = scribbles.user  WHERE scribbles.id = ?
+EOF;
       $statement = $this->pdo->prepare($sql);
       if ( !$statement->execute(array($id)) ) {
         return "Database lookup failed.";
@@ -85,10 +84,9 @@ EOF;
   }
 
   protected function deleteScribble($id) {
-    $sql = "DELETE FROM likes WHERE likes.scribble = ?";
-
     $statement;
     try {
+      $sql = "DELETE FROM likes WHERE likes.scribble = ?";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($id)) ) {
