@@ -1,17 +1,65 @@
 export class Log {
   name = 'log';
   title = 'API Logs';
+  once = false;
+  table = null;
 
   setup() {
-    this.populateLogs();
+    this.runTable();
   }
 
   again() {
-    this.populateLogs();
+    return;
   }
 
   teardown() {
     return;
+  }
+
+  async runTable() {
+    if (this.once) {
+      this.table.draw();
+      return;
+    }
+
+    this.once = true;
+
+    function renderUsername(data) {
+      return '<a href="user.php?username=' + data + '" class="leaderboard-user site-nav selectable">' + 
+               '<div class="leaderboard-username">' + data + '</div>' +
+             '</a>';
+    }
+
+    this.table = new DataTable('#log-table', {
+      ajax: 'api/log.php?action=fetch_rows',
+      processing: true,
+      serverSide: true,
+      paging: false,
+      columns: [
+        { "data": "timestamp", "name": "timestamp", "title": "Timestamp",
+          "orderSequence": ["asc", "desc"], "className": "dt-center",
+        },
+        { "data": "endpoint", "name": "endpoint", "title": "Endpoint",
+          "orderSequence": ["asc", "desc"], "className": "dt-center"
+        },
+        { "data": "method", "name": "method", "title": "Method",
+          "orderSequence": ["asc", "desc"], "className": "dt-center"
+        },
+        { "data": "username", "name": "username", "title": "Username",
+          "orderSequence": ["asc", "desc"], "className": "dt-center",
+          "render": renderUsername,
+        },
+        { "data": "success", "name": "success", "title": "Success",
+          "orderSequence": ["asc", "desc"], "className": "dt-center"
+        },
+        { "data": "message", "name": "message", "title": "Message",
+          "orderSequence": ["asc", "desc"], "className": "dt-center"
+        }
+      ],
+      order: [[0, 'desc']]
+    });
+
+    $.fn.dataTable.ext.errMode = 'none'; //prevents the alert() calls
   }
 
   async populateLogs() {

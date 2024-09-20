@@ -36,6 +36,17 @@ class RestLogEntry {
   public function getEntry($msg) {
    return date("Y-m-d H:i:s") . " | " . $this->endpointName . " | " . $this->method . " | " . $this->username . " | " . $this->success . " | " . $msg . "\n";
   }
+
+  public function getEntryForDB($msg) {
+    return array(
+      date("Y-m-d H:i:s"),
+      $this->endpointName,
+      $this->method,
+      $this->username,
+      $this->success,
+      $msg
+    );
+  }
 }
 
 class Rest {
@@ -49,6 +60,7 @@ class Rest {
   private int $successCode;
   private string $successMessage;
   private $perms;
+  private $pdo;
 
   // Construct this after calling session_start()
   public function __construct() {
@@ -62,8 +74,13 @@ class Rest {
   }
 
   public function __destruct() {
+    $this->pdo = null;
     $this->data = null;
     $this->responseFields = null;
+  }
+
+  public function setPDO($pdo) {
+    $this->pdo = $pdo;
   }
 
   public function setMethod($method) {
@@ -160,11 +177,30 @@ class Rest {
     file_put_contents($this->logFilename, $this->logEntry->getEntry($msg), FILE_APPEND);
   }
 
+  private function logDB($msg) {
+    $entry = $this->logEntry->getEntryForDB($msg);
+    $statement;
+    try {
+      $sql = "INSERT INTO logs (timestamp, endpoint, method, username, success, message) VALUES (?, ?, ?, ?, ?, ?)";
+      $statement = $this->pdo->prepare($sql);
+      if ( !$statement->execute($entry) ) {
+        return "Database store failed.";
+      }
+    } catch (PDOException $e) {
+      return "Database query error.";
+    } finally {
+      $statement = null;
+    }
+
+    return "";
+  }
+
   public function error($msg) {
     http_response_code(400);
 
     $this->logEntry->setSuccess("FAILED");
     $this->log($msg);
+    $this->logDB($msg);
 
     echo json_encode(array("error" => $msg));
   }
@@ -178,6 +214,7 @@ class Rest {
 
     $this->logEntry->setSuccess("SUCCESS");
     $this->log($msg);
+    $this->logDB($msg);
 
     $response = array("success" => $msg);
 

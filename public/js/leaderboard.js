@@ -55,7 +55,7 @@ export class Leaderboard {
     this.once = true;
 
     function renderAvatar(data) {
-      return '<a href="user.php?username=' + data.username + '" class="leaderboard-user selectable">' + 
+      return '<a href="user.php?username=' + data.username + '" class="leaderboard-user site-nav selectable">' + 
                '<img class="leaderboard-avatar" src=' + data.data_url + '></img>' +
                '<div class="leaderboard-username">' + data.username + '</div>' +
              '</a>';

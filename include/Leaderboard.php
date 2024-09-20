@@ -29,10 +29,9 @@ class Leaderboard extends DatabaseHandler {
   }
 
   protected function read() {
-    $sql = "SELECT max_display_rows, total_entries FROM leaderboard";
-
     $statement;
     try {
+      $sql = "SELECT max_display_rows, total_entries FROM leaderboard";
       $statement = $this->pdo->query($sql);
       $row = $statement->fetch();
       $this->maxRows = $row["max_display_rows"];
@@ -47,10 +46,9 @@ class Leaderboard extends DatabaseHandler {
   }
 
   protected function writeMaxRows($num) {
-    $sql = "UPDATE leaderboard SET max_display_rows = ? WHERE id = 1";
-
     $statement;
     try {
+      $sql = "UPDATE leaderboard SET max_display_rows = ? WHERE id = 1";
       $statement = $this->pdo->prepare($sql);
 
       if ( !$statement->execute(array($num)) ) {

@@ -7,7 +7,7 @@
   require_once "../../include/LogController.php";
 
   $ctrl = new LogController();
-  //$ctrl->setPDO($pdo); // $pdo declared in include/common/includes.php
+  $ctrl->setPDO($pdo); // $pdo declared in include/common/includes.php
 
   $msg = $ctrl->run();
   if (!!$msg) {
@@ -16,7 +16,7 @@
     $ctrl->success();
   }
 
-  //$ctrl->setPDO(null);
+  $ctrl->setPDO(null);
   $ctrl = null;
 
   require_once "../../include/common/cleanup.php";

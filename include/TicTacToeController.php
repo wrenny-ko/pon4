@@ -47,11 +47,15 @@ class TicTacToeController {
   private $action;
 
   public function error($msg) {
+    $this->rest->setPDO($this->pdo);
     $this->rest->error($msg);
+    $this->rest->setPDO(null);
   }
 
   public function success() {
+    $this->rest->setPDO($this->pdo);
     $this->rest->success($this->action->value);
+    $this->rest->setPDO(null);
   }
 
   public function run() {
