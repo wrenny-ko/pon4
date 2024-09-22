@@ -82,7 +82,7 @@ class Leaderboard extends DatabaseHandler {
     return "";
   }
 
-  public function populate(LeaderboardColumn $sortCol = LeaderboardColumn::TotalScribbles, LeaderboardSortDir $sortDir = LeaderboardSortDir::Down) {
+  public function populate(LeaderboardColumn $sortCol = LeaderboardColumn::TotalScribbles, LeaderboardSortDir $sortDir = LeaderboardSortDir::Down, $search = null) {
     // select each user
     //   select all scribbles by them, calc totals
     //   sort by sortcol in sortdir, truncate by max numrows
@@ -91,8 +91,14 @@ class Leaderboard extends DatabaseHandler {
     $statement;
     try {
       $sql = "SELECT * FROM users";
+      $values = array();
+      if (!!$search) {
+        $sql .= " WHERE username LIKE ?";
+        $values = array($search . "%");
+      }
+
       $statement = $this->pdo->prepare($sql);
-      if ( !$statement->execute(array()) ) {
+      if ( !$statement->execute($values) ) {
         return "Database lookup failed.";
       }
 
@@ -104,7 +110,7 @@ class Leaderboard extends DatabaseHandler {
         );
       }
     } catch (PDOException $e) {
-      return "Database error.";
+      return "Database error. " . $e->getMessage();
     } finally {
       $statement = null;
     }

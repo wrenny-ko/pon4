@@ -66,7 +66,6 @@ export class Leaderboard {
       processing: true,
       serverSide: true,
       paging: false,
-      searching: false,
       columns: [
         { "data": "username", "name": "username", "title": "Username",
           "orderSequence": ["asc", "desc"], "className": "dt-center userfield",
@@ -88,7 +87,10 @@ export class Leaderboard {
           "orderSequence": ["desc", "asc"], "className": "dt-center"
         }
       ],
-      order: [[1, 'desc']]
+      order: [[1, 'desc']],
+      oLanguage: {
+        sSearch: "Search Username:"
+      }
     });
 
     $.fn.dataTable.ext.errMode = 'none'; //prevents the alert() calls

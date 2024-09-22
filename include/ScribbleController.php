@@ -118,6 +118,7 @@ class ScribbleController extends Scribble {
       return "request method not supported";
     }
     $this->rest->setMethod($method);
+    $this->rest->updateLogRequestMethod();
 
     if (!isset($_GET["action"])) {
       return "requires an 'action' query string";

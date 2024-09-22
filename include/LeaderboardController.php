@@ -63,8 +63,8 @@ class LeaderboardController extends Leaderboard {
     } catch (\Throwable $e) {
       return "request method not supported";
     }
-
     $this->rest->setMethod($method);
+    $this->rest->updateLogRequestMethod();
 
     if (!isset($_GET["action"])) {
       return "requires an 'action' query string";
@@ -170,7 +170,16 @@ class LeaderboardController extends Leaderboard {
       return "invalid datatables query. order column name not matched";
     }
 
-    $err = $this->populate($sortCol, $sortDir);
+    if (!isset($_GET["search"])) {
+      return "Invalid datatables request. 'search' query parameter not set.";
+    }
+
+    if (!isset($_GET["search"]["value"])) {
+      return "Invalid datatables request. search value query parameter not set.";
+    }
+
+    $search = $_GET["search"]["value"];
+    $err = $this->populate($sortCol, $sortDir, $search);
     if (!!$err) {
       return "Error populating leaderboard. " . $err;
     }

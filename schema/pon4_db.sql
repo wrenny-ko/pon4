@@ -29,7 +29,8 @@ CREATE TABLE `users` (
   `username` varchar(20) NOT NULL UNIQUE,
   `email` varchar(40) NOT NULL UNIQUE,
   `password` varchar(64) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  INDEX `index_users_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 CREATE TABLE `perms` (
@@ -40,8 +41,8 @@ CREATE TABLE `perms` (
   `tech` boolean NOT NULL DEFAULT 0,
   `beta` boolean NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
-  INDEX `user_index` (`user`),
-  FOREIGN KEY (`user`) REFERENCES `users` (`id`)
+  FOREIGN KEY (`user`) REFERENCES `users` (`id`),
+  INDEX `index_perms_user` (`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 CREATE TABLE `leaderboard` (
@@ -57,8 +58,8 @@ CREATE TABLE `badges` (
   `scribblestar` boolean NOT NULL,
   `buttonpresser` boolean NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `user_index` (`user`),
-  FOREIGN KEY (`user`) REFERENCES `users` (`id`)
+  FOREIGN KEY (`user`) REFERENCES `users` (`id`),
+  INDEX `index_badges_user` (`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 CREATE TABLE `scribbles` (
@@ -69,8 +70,9 @@ CREATE TABLE `scribbles` (
   `title` varchar(30) NOT NULL,
   `data_url` varchar(100000) NOT NULL,
   PRIMARY KEY (`id`),
-  INDEX `user_index` (`user`),
-  FOREIGN KEY (`user`) REFERENCES `users` (`id`)
+  FOREIGN KEY (`user`) REFERENCES `users` (`id`),
+  INDEX `index_scribbles_user` (`user`),
+  INDEX `index_scribbles_title` (`title`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 CREATE TABLE `likes` (
@@ -79,7 +81,9 @@ CREATE TABLE `likes` (
   `scribble` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`user`) REFERENCES `users` (`id`),
-  FOREIGN KEY (`scribble`) REFERENCES `scribbles` (`id`)
+  FOREIGN KEY (`scribble`) REFERENCES `scribbles` (`id`),
+  INDEX `index_likes_user` (`user`),
+  INDEX `index_likes_scribble` (`scribble`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 CREATE TABLE `dislikes` (
@@ -88,7 +92,9 @@ CREATE TABLE `dislikes` (
   `scribble` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`user`) REFERENCES `users` (`id`),
-  FOREIGN KEY (`scribble`) REFERENCES `scribbles` (`id`)
+  FOREIGN KEY (`scribble`) REFERENCES `scribbles` (`id`),
+  INDEX `index_dislikes_user` (`user`),
+  INDEX `index_dislikes_scribble` (`scribble`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 CREATE TABLE `comments` (
@@ -99,7 +105,9 @@ CREATE TABLE `comments` (
   `text` varchar(300) NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`user`) REFERENCES `users` (`id`),
-  FOREIGN KEY (`scribble`) REFERENCES `scribbles` (`id`)
+  FOREIGN KEY (`scribble`) REFERENCES `scribbles` (`id`),
+  INDEX `index_comments_user` (`user`),
+  INDEX `index_comments_scribble` (`scribble`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
 
 CREATE TABLE `logs` (
@@ -110,15 +118,14 @@ CREATE TABLE `logs` (
   `username` varchar(30) NOT NULL,
   `success` varchar(10) NOT NULL,
   `message` varchar(100),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  INDEX `index_logs_timestamp` (`timestamp`),
+  INDEX `index_logs_endpoint` (`endpoint`),
+  INDEX `index_logs_method` (`method`),
+  INDEX `index_logs_username` (`username`),
+  INDEX `index_logs_success` (`success`),
+  INDEX `index_logs_message` (`message`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
-
-CREATE INDEX `index_timestamp` ON `logs` (`timestamp`);
-CREATE INDEX `index_endpoint` ON `logs` (`endpoint`);
-CREATE INDEX `index_method` ON `logs` (`method`);
-CREATE INDEX `index_username` ON `logs` (`username`);
-CREATE INDEX `index_success` ON `logs` (`success`);
-CREATE INDEX `index_nessage` ON `logs` (`message`);
 
 -- set default user and avatar
 INSERT INTO `users` (`username`, `email`, `password`) VALUES ('anonymous','me@me', 'deadbeef');

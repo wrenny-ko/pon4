@@ -167,6 +167,10 @@ class Rest {
     $this->logEntry->setUsername($username);
   }
 
+  public function updateLogRequestMethod() {
+    $this->logEntry->setMethod($this->method->value);
+  }
+
   public function getLogFilename() {
     return $this->logFilename;
   }

@@ -168,37 +168,17 @@ export class Draw {
       $('.clear-canvas-button')[0].setAttribute('disabled', '');
     }
 
-    // hide the spinner and allow the buttons to be pressed again
-    function enable() {
-      $('.spinner')[0].classList.add('hidden');
-      if (!isBlank()) {
-        $('.submit-button')[0].removeAttribute('disabled');
-      }
-      $('.clear-canvas-button')[0].removeAttribute('disabled');
-    }
-
-    function setErrorMsg(msg) {
-      const errorEl = $('.error')[0];
-      errorEl.classList.remove('hidden');
-      errorEl.innerHTML = msg;
-    }
-
     function drawThumb() {
       const base64URL = ctx.canvas.toDataURL();
       const t = $('.thumb')[0];
       t.src = base64URL;
     }
 
-    function isBlank() {
-      let d = ctx.getImageData(0, 0, 200, 200).data;
-      return !d.some(ch => ch !== 0);
-    }
-
     function close() {
-      enable();
+      Draw.enable();
       Draw.clearTitleInput();
       Draw.hideTitleModal();
-      if (isBlank()) {
+      if (Draw.isBlank()) {
         $('.submit-button')[0].setAttribute('disabled', '');
       }
     }
@@ -324,10 +304,32 @@ export class Draw {
       ev.eventName = "approute";
       e.srcElement.dispatchEvent(ev);
     }).catch( err => {
-      setErrorMsg('Error: ' + err.response.data.error); // show error message
-      enable(); // hide the spinner and allow the buttons to be pressed again
+      Draw.setErrorMsg('Error: ' + err.response.data.error); // show error message
+      Draw.enable(); // hide the spinner and allow the buttons to be pressed again
     });
 
     return false;
+  }
+
+  static setErrorMsg(msg) {
+    const errorEl = $('.error')[0];
+    errorEl.classList.remove('hidden');
+    errorEl.innerHTML = msg;
+  }
+
+  // hide the spinner and allow the buttons to be pressed again
+  static enable() {
+    $('.spinner')[0].classList.add('hidden');
+    if (!Draw.isBlank()) {
+      $('.submit-button')[0].removeAttribute('disabled');
+    }
+    $('.clear-canvas-button')[0].removeAttribute('disabled');
+  }
+
+  static isBlank() {
+    const c = $('.pad')[0];
+    const ctx = c.getContext('2d');
+    const d = ctx.getImageData(0, 0, 200, 200).data;
+    return !d.some(ch => ch !== 0);
   }
 }

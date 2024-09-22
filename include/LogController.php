@@ -80,8 +80,8 @@ class LogController extends DatabaseHandler {
     } catch (\Throwable $e) {
       return "request method not supported";
     }
-
     $this->rest->setMethod($method);
+    $this->rest->updateLogRequestMethod();
 
     if (!isset($_GET["action"])) {
       return "requires an 'action' query string";
@@ -194,29 +194,37 @@ class LogController extends DatabaseHandler {
       return "invalid datatables query. order column name not matched";
     }
 
-    $err = $this->populate($sortCol, $sortDir);
+    if (!isset($_GET["search"])) {
+      return "Invalid datatables request. 'search' query parameter not set.";
+    }
+
+    if (!isset($_GET["search"]["value"])) {
+      return "Invalid datatables request. search value query parameter not set.";
+    }
+
+    $search = $_GET["search"]["value"];
+
+    $err = $this->populate($sortCol, $sortDir, $search);
     if (!!$err) {
       return "Error populating leaderboard. " . $err;
     }
 
-    //$this->rest->setData($this->board);
-    //$this->rest->setResponseField("recordsFiltered", $this->numFilteredEntries);
     $this->rest->setSuccessMessage("sortCol: '" . $sortCol->value . "', sortDir: '" . $dir . "'");
   }
 
-  public function populate(LogColumn $sortCol = LogColumn::Timestamp, LogSortDir $sortDir = LogSortDir::Desc) {
+  public function populate(LogColumn $sortCol = LogColumn::Timestamp, LogSortDir $sortDir = LogSortDir::Desc, $search = null) {
     $entries = array();
     $statement;
     try {
       $sql = "SELECT * FROM logs";
-
-      $search = $_GET["search"]["value"];
+      $values = array();
       if (!!$search) {
-        $sql .= " WHERE {$sortCol->value} LIKE '%$search%'";
+        $sql .= " WHERE {$sortCol->value} LIKE ?";
+        $values = array("%" . $search . "%");
       }
 
       $statement = $this->pdo->prepare($sql);
-      if ( !$statement->execute(array()) ) {
+      if ( !$statement->execute($values) ) {
         return "Database lookup failed.";
       }
 
@@ -235,11 +243,10 @@ class LogController extends DatabaseHandler {
     $dir = $sortDir->value; // have to break this out of the function because of a 'read-only' error below
     array_multisort(array_column($entries, $sortCol->value), $dir, SORT_REGULAR, $entries);
 
-    // truncate for final leaderboard
-    $curated = array_slice($entries, 0, $this->maxRows);
+    $curated = array_slice($entries, $_GET["start"], $_GET["length"]);
 
     $this->rest->setData($curated);
-    $this->rest->setResponseField("recordsFiltered", count($curated));
+    $this->rest->setResponseField("recordsFiltered", count($entries));
 
     return "";
   }

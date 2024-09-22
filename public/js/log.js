@@ -25,7 +25,7 @@ export class Log {
     this.once = true;
 
     function renderUsername(data) {
-      return '<a href="user.php?username=' + data + '" class="leaderboard-user site-nav selectable">' + 
+      return '<a href="user?username=' + data + '" class="leaderboard-user site-nav selectable">' + 
                '<div class="leaderboard-username">' + data + '</div>' +
              '</a>';
     }
@@ -34,7 +34,6 @@ export class Log {
       ajax: 'api/log.php?action=fetch_rows',
       processing: true,
       serverSide: true,
-      paging: false,
       columns: [
         { "data": "timestamp", "name": "timestamp", "title": "Timestamp",
           "orderSequence": ["asc", "desc"], "className": "dt-center",
@@ -56,7 +55,10 @@ export class Log {
           "orderSequence": ["asc", "desc"], "className": "dt-center"
         }
       ],
-      order: [[0, 'desc']]
+      order: [[0, 'desc']],
+      oLanguage: {
+        sSearch: "Search Current Sort Column:"
+      }
     });
 
     $.fn.dataTable.ext.errMode = 'none'; //prevents the alert() calls

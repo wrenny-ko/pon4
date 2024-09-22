@@ -131,7 +131,9 @@ class User extends DatabaseHandler {
     try {
       $sql = "UPDATE leaderboard SET total_entries = total_entries + 1";
       $statement = $this->pdo->prepare($sql);
-      $statement = $this->pdo->execute(array($this->numTotalEntries));
+      if ( !$statement->execute() ) {
+        return "Database update failed.";
+      }
     } catch (PDOException $e) {
       return "Database execute error.";
     } finally {
@@ -211,9 +213,11 @@ class User extends DatabaseHandler {
       return "Could not create user. " . $error;
     }
 
-    require_once("Leaderboard.php");
-    $ldr = new Leaderboard();
-    $ldr->incrementLeaderboardTotalEntries();
+    $error = $this->incrementLeaderboardTotalEntries();
+    if (!!$error) {
+      return "Error processing leaderboard. " . $error;
+    }
+
     $_SESSION['username'] = $this->username;
   }
 
